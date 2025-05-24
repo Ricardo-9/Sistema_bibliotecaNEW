@@ -21,6 +21,7 @@ function DevolucaoLivros() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setMsg(null)
 
     const { data: livro, error: erroLivro } = await supabase
       .from('livros')
@@ -28,22 +29,48 @@ function DevolucaoLivros() {
       .ilike('nome', form.nome_livro)
       .maybeSingle()
 
-    const { data: usuario, error: erroUsuario } = await supabase
-      .from('usuarios')
+    if (erroLivro || !livro) {
+      setMsg('Livro não encontrado')
+      return
+    }
+
+    let solicitante_id: string | null = null
+    let tipo_solicitante: 'aluno' | 'funcionario' | null = null
+
+    const { data: aluno } = await supabase
+      .from('alunos')
       .select('id')
       .ilike('nome', form.nome_pessoa)
       .maybeSingle()
 
-    if (erroLivro || !livro || erroUsuario || !usuario) {
-      setMsg('Livro ou usuário não encontrados')
+    if (aluno) {
+      solicitante_id = aluno.id
+      tipo_solicitante = 'aluno'
+    } else {
+      const { data: funcionario } = await supabase
+        .from('funcionarios')
+        .select('id')
+        .ilike('nome', form.nome_pessoa)
+        .maybeSingle()
+
+      if (funcionario) {
+        solicitante_id = funcionario.id
+        tipo_solicitante = 'funcionario'
+      }
+    }
+
+    if (!solicitante_id || !tipo_solicitante) {
+      setMsg('Usuário não encontrado')
       return
     }
 
     const { data: emprestimo, error: erroEmprestimo } = await supabase
       .from('emprestimos')
-      .select('id, nome_livro, nome_pessoa')
+      .select('id, nome_livro, solicitante_id')
       .eq('nome_livro', livro.id)
-      .eq('nome_pessoa', usuario.id)
+      .eq('solicitante_id', solicitante_id)
+      .eq('tipo_solicitante', tipo_solicitante)
+      .is('devolvido', null)
       .maybeSingle()
 
     if (erroEmprestimo || !emprestimo) {
@@ -51,7 +78,7 @@ function DevolucaoLivros() {
       return
     }
 
-    const { error: erroRemocao } = await supabase
+     const { error: erroRemocao } = await supabase
       .from('emprestimos')
       .delete()
       .eq('id', emprestimo.id)
@@ -61,13 +88,13 @@ function DevolucaoLivros() {
       return
     }
 
-    const { error: erroAtualizacao } = await supabase
+    const { error: erroAtualizacaoLivro } = await supabase
       .from('livros')
       .update({ q_disponivel: livro.q_disponivel + 1 })
       .eq('id', livro.id)
 
-    if (erroAtualizacao) {
-      setMsg('Ocorreu um erro ao atualizar a quantidade de livros.')
+    if (erroAtualizacaoLivro) {
+      setMsg('Erro ao atualizar quantidade de livros')
       return
     }
 
@@ -108,5 +135,6 @@ function DevolucaoLivros() {
     </div>
   )
 }
+
 
 export default withRoleProtection(DevolucaoLivros, ['funcionario'])

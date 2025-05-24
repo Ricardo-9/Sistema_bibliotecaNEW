@@ -31,12 +31,6 @@ function CadastroLivros() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    const camposVazios = Object.entries(form).filter(([_, valor]) => valor.trim() === '')
-    if (camposVazios.length > 0) {
-      setMensagem('Por favor, preencha todos os campos.')
-      return
-    }
-
     const { data: livrosExistentes, error: fetchError } = await supabase
       .from('livros')
       .select('isbn')
@@ -95,7 +89,7 @@ function CadastroLivros() {
       <form onSubmit={handleSubmit}>
         <div>
           <label>Nome</label>
-          <input name="nome" value={form.nome} onChange={handleChange} />
+          <input name="nome" value={form.nome} onChange={handleChange} required/>
         </div>
 
         <div>
@@ -107,12 +101,13 @@ function CadastroLivros() {
             type="number"
             min={1000}
             max={new Date().getFullYear()}
+            required
           />
         </div>
 
         <div>
           <label>Categoria</label>
-          <input name="categoria" value={form.categoria} onChange={handleChange} />
+          <input name="categoria" value={form.categoria} onChange={handleChange} required/>
         </div>
 
         <div>
@@ -131,7 +126,7 @@ function CadastroLivros() {
 
         <div>
           <label>Autor</label>
-          <input name="autor" value={form.autor} onChange={handleChange} />
+          <input name="autor" value={form.autor} onChange={handleChange} required/>
         </div>
 
         <div>
@@ -142,6 +137,7 @@ function CadastroLivros() {
             onChange={handleChange}
             type="number"
             min={0}
+            required
           />
         </div>
 
