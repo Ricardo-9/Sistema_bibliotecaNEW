@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { withRoleProtection } from '../components/withRoleProtection'
+import { withRoleProtection } from '../components/withRoleProtection' 
 
 function CadastroEmprestimos() {
   const [form, setForm] = useState({
@@ -22,6 +22,7 @@ function CadastroEmprestimos() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setMsg(null)
 
     const { data: livro, error: erroLivro } = await supabase
       .from('livros')
@@ -29,41 +30,57 @@ function CadastroEmprestimos() {
       .ilike('nome', form.nome_livro)
       .maybeSingle()
 
-    const { data: usuario, error: erroUsuario } = await supabase
-      .from('usuarios')
-      .select('id')
-      .ilike('nome', form.nome_pessoa)
-      .maybeSingle()
-
-    if (erroLivro || !livro || erroUsuario || !usuario) {
-      setMsg('Livro ou usuário não cadastrado')
-      setDataDevolucaoFormatada(null)
+    if (erroLivro || !livro) {
+      setMsg('Livro não cadastrado')
       return
     }
 
     if (livro.q_disponivel <= 0) {
-      setMsg('Não há livros disponíveis para empréstimo')
-      setDataDevolucaoFormatada(null)
+      setMsg('Não há exemplares disponíveis')
       return
     }
 
-    const { data: emprestimoExistente, error: erroEmprestimoExistente } = await supabase
+    let solicitante_id: string | null = null
+    let tipo_solicitante: 'aluno' | 'funcionario' | null = null
+
+    const { data: aluno } = await supabase
+      .from('alunos')
+      .select('id')
+      .ilike('nome', form.nome_pessoa)
+      .maybeSingle()
+
+    if (aluno) {
+      solicitante_id = aluno.id
+      tipo_solicitante = 'aluno'
+    } else {
+      const { data: funcionario } = await supabase
+        .from('funcionarios')
+        .select('id')
+        .ilike('nome', form.nome_pessoa)
+        .maybeSingle()
+
+      if (funcionario) {
+        solicitante_id = funcionario.id
+        tipo_solicitante = 'funcionario'
+      }
+    }
+
+    if (!solicitante_id || !tipo_solicitante) {
+      setMsg('Pessoa não encontrada (aluno ou funcionário)')
+      return
+    }
+
+    const { data: emprestimoExistente } = await supabase
       .from('emprestimos')
       .select('*')
       .eq('nome_livro', livro.id)
-      .eq('nome_pessoa', usuario.id)
+      .eq('solicitante_id', solicitante_id)
+      .eq('tipo_solicitante', tipo_solicitante)
       .is('devolvido', null)
       .maybeSingle()
 
-    if (erroEmprestimoExistente) {
-      setMsg('Erro ao verificar empréstimos existentes.')
-      setDataDevolucaoFormatada(null)
-      return
-    }
-
     if (emprestimoExistente) {
-      setMsg('Este usuário já possui um exemplar deste livro emprestado.')
-      setDataDevolucaoFormatada(null)
+      setMsg('Este usuário já possui este livro emprestado.')
       return
     }
 
@@ -71,17 +88,17 @@ function CadastroEmprestimos() {
     const dataDevolucao = new Date()
     dataDevolucao.setDate(dataEmprestimo.getDate() + 30)
 
-    const { error } = await supabase.from('emprestimos').insert([
+    const { error: erroInsercao } = await supabase.from('emprestimos').insert([
       {
         nome_livro: livro.id,
-        nome_pessoa: usuario.id,
+        solicitante_id,
+        tipo_solicitante,
         data_devolucao: dataDevolucao.toISOString(),
       },
     ])
 
-    if (error) {
-      setMsg('Ocorreu um erro ao cadastrar o empréstimo.')
-      setDataDevolucaoFormatada(null)
+    if (erroInsercao) {
+      setMsg('Erro ao registrar empréstimo')
       return
     }
 
@@ -91,19 +108,19 @@ function CadastroEmprestimos() {
       .eq('id', livro.id)
 
     if (erroAtualizacao) {
-      setMsg('Ocorreu um erro ao atualizar a quantidade de livros.')
-      setDataDevolucaoFormatada(null)
+      setMsg('Erro ao atualizar quantidade de livros')
       return
     }
 
-    const devolucaoFormatada = dataDevolucao.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
+    setDataDevolucaoFormatada(
+      dataDevolucao.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+    )
 
     setMsg('Empréstimo efetuado com sucesso.')
-    setDataDevolucaoFormatada(devolucaoFormatada)
     setForm({ nome_livro: '', nome_pessoa: '' })
   }
 
@@ -131,9 +148,7 @@ function CadastroEmprestimos() {
             required
           />
         </div>
-        <div>
-          <button type="submit">Cadastrar</button>
-        </div>
+        <button type="submit">Cadastrar</button>
       </form>
 
       {msg && <p>{msg}</p>}
