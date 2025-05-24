@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 
@@ -41,6 +40,12 @@ export default function Home() {
             onClick={() => router.push('/signup-funcionario')}
           >
             Funcionário
+          </button>
+          <button
+            className="text-blue-500 underline mt-4"
+            onClick={() => setStep('initial')}
+          >
+            Voltar
           </button>
         </>
       )}

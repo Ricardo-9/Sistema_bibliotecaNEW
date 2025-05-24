@@ -1,36 +1,30 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
-import { useRouter } from 'next/router'
+'use client'
 
-export default function Dashboard() {
-  const [user, setUser] = useState(null)
+import { useRouter } from 'next/navigation'
+import { withRoleProtection } from '../components/withRoleProtection'
+
+function TelaInicial() {
   const router = useRouter()
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data, error } = await supabase.auth.getUser()
-      if (error || !data.user) {
-        router.push('/login')
-      } else {
-        setUser(data.user)
-      }
-    }
-    getUser()
-  }, [])
-
-  const logout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
+  function navegar(rota: string) {
+    router.push(rota)
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold">Tela de inicio</h1>
-      <button></button>
-      {user && <p className="mb-4">Olá, {user.email}</p>}
-      <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded">
-        Sair
-      </button>
-    </div>
+    <main style={{ padding: '2rem' }}>
+      <h1>Tela Inicial</h1>
+      <p>Escolha uma opção:</p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+        <button onClick={() => navegar('/devolucao')}>Devolução</button>
+        <button onClick={() => navegar('/c_livros')}>Cadastro de Livros</button>
+        <button onClick={() => navegar('/c_emprestimos')}>Cadastro de Empréstimos</button>
+        <button onClick={() => navegar('/c_editoras')}>Cadastro de Editoras</button>
+      </div>
+       
+    </main>
   )
 }
+
+
+export default withRoleProtection(TelaInicial, ['aluno', 'funcionario'])
