@@ -1,41 +1,42 @@
 'use client'
 
-import { useState } from "react"
-import { supabase } from "../lib/supabaseClient"
+import { useState } from 'react'
+import { supabase } from '../lib/supabaseClient'
+import { withRoleProtection } from '../components/withRoleProtection'
 
-export default function DevolucaoLivros() {
+function DevolucaoLivros() {
   const [form, setForm] = useState({
-    nome_livro: "",
-    nome_pessoa: "",
-  });
+    nome_livro: '',
+    nome_pessoa: '',
+  })
 
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({
       ...form,
-      [e.target.name]: e.target.value
-    });
+      [e.target.name]: e.target.value,
+    })
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+    e.preventDefault()
 
     const { data: livro, error: erroLivro } = await supabase
       .from('livros')
       .select('id, q_disponivel')
       .ilike('nome', form.nome_livro)
-      .maybeSingle();
+      .maybeSingle()
 
     const { data: usuario, error: erroUsuario } = await supabase
       .from('usuarios')
       .select('id')
       .ilike('nome', form.nome_pessoa)
-      .maybeSingle();
+      .maybeSingle()
 
     if (erroLivro || !livro || erroUsuario || !usuario) {
-      setMsg("Livro ou usuário não encontrados");
-      return;
+      setMsg('Livro ou usuário não encontrados')
+      return
     }
 
     const { data: emprestimo, error: erroEmprestimo } = await supabase
@@ -43,35 +44,35 @@ export default function DevolucaoLivros() {
       .select('id, nome_livro, nome_pessoa')
       .eq('nome_livro', livro.id)
       .eq('nome_pessoa', usuario.id)
-      .maybeSingle();
+      .maybeSingle()
 
     if (erroEmprestimo || !emprestimo) {
-      setMsg("Empréstimo não encontrado para este livro e usuário");
-      return;
+      setMsg('Empréstimo não encontrado para este livro e usuário')
+      return
     }
 
     const { error: erroRemocao } = await supabase
       .from('emprestimos')
       .delete()
-      .eq('id', emprestimo.id);
+      .eq('id', emprestimo.id)
 
     if (erroRemocao) {
-      setMsg("Ocorreu um erro ao remover o empréstimo");
-      return;
+      setMsg('Ocorreu um erro ao remover o empréstimo')
+      return
     }
 
     const { error: erroAtualizacao } = await supabase
       .from('livros')
       .update({ q_disponivel: livro.q_disponivel + 1 })
-      .eq('id', livro.id);
+      .eq('id', livro.id)
 
     if (erroAtualizacao) {
-      setMsg("Ocorreu um erro ao atualizar a quantidade de livros.");
-      return;
+      setMsg('Ocorreu um erro ao atualizar a quantidade de livros.')
+      return
     }
 
-    setMsg("Devolução registrada com sucesso.");
-    setForm({ nome_livro: "", nome_pessoa: "" });
+    setMsg('Devolução registrada com sucesso.')
+    setForm({ nome_livro: '', nome_pessoa: '' })
   }
 
   return (
@@ -105,5 +106,7 @@ export default function DevolucaoLivros() {
 
       {msg && <p>{msg}</p>}
     </div>
-  );
+  )
 }
+
+export default withRoleProtection(DevolucaoLivros, ['funcionario'])

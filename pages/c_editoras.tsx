@@ -2,21 +2,20 @@
 
 import { useState } from "react"
 import { supabase } from "../lib/supabaseClient"
-import Cleave from "cleave.js/react";
+import { withRoleProtection } from '../components/withRoleProtection'
+import Cleave from "cleave.js/react"
 
-export default function CadastroEditoras() {
+function CadastroEditoras() {
   const [form, setForm] = useState({ nome: "", email: "", telefone: "" });
   const [msg, setMsg] = useState("");
 
-
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    let { name, value } = e.target;
-
+    const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
   function handleTelefoneChange(e: any) {
-    setForm({ ...form, telefone: e.target.value })
+    setForm({ ...form, telefone: e.target.value });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -72,11 +71,15 @@ export default function CadastroEditoras() {
           placeholder="Email"
           required
         />
-        <Cleave name="telefone" onChange={handleTelefoneChange} placeholder="Telefone"
+        <Cleave
+          name="telefone"
+          value={form.telefone}
+          onChange={handleTelefoneChange}
+          placeholder="Telefone"
           options={{
-          delimiters: ['(', ') ', '-', '-'],
-          blocks: [0, 2, 5, 4],
-          numericOnly: true
+            delimiters: ['(', ') ', '-', '-'],
+            blocks: [0, 2, 5, 4],
+            numericOnly: true
           }}
         />
         <button type="submit">Cadastrar</button>
@@ -85,3 +88,6 @@ export default function CadastroEditoras() {
     </div>
   );
 }
+
+
+export default withRoleProtection(CadastroEditoras, ['funcionario'])

@@ -25,7 +25,8 @@ export default function Dashboard() {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold">Dashboard</h1>
+      <h1 className="text-xl font-bold">Tela de inicio</h1>
+      <button></button>
       {user && <p className="mb-4">Olá, {user.email}</p>}
       <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded">
         Sair

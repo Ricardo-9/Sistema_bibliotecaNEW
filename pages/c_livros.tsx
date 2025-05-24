@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import Cleave from 'cleave.js/react'
+import { withRoleProtection } from '../components/withRoleProtection'
 
-export default function CadastroLivros() {
+function CadastroLivros() {
   const [form, setForm] = useState({
     nome: '',
     ano_publicacao: '',
@@ -22,6 +23,7 @@ export default function CadastroLivros() {
       [e.target.name]: e.target.value
     })
   }
+
   function handleIsbnChange(e: any) {
     setForm({ ...form, isbn: e.target.value })
   }
@@ -29,7 +31,7 @@ export default function CadastroLivros() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    const camposVazios = Object.entries(form).filter(([chave, valor]) => valor.trim() === '')
+    const camposVazios = Object.entries(form).filter(([_, valor]) => valor.trim() === '')
     if (camposVazios.length > 0) {
       setMensagem('Por favor, preencha todos os campos.')
       return
@@ -110,7 +112,7 @@ export default function CadastroLivros() {
 
         <div>
           <label>Categoria</label>
-          <input name="categoria" value={form.categoria} onChange={handleChange}/>
+          <input name="categoria" value={form.categoria} onChange={handleChange} />
         </div>
 
         <div>
@@ -140,16 +142,16 @@ export default function CadastroLivros() {
             onChange={handleChange}
             type="number"
             min={0}
-          
           />
         </div>
 
-        <button type="submit" className='border-2'>
-          Cadastrar
-        </button>
+        <button type="submit" className="border-2">Cadastrar</button>
       </form>
 
       {mensagem && <p>{mensagem}</p>}
     </div>
   )
 }
+
+
+export default withRoleProtection(CadastroLivros, ['funcionario'])
