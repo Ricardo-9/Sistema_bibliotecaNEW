@@ -2,10 +2,10 @@
 
 import { useState } from "react"
 import { supabase } from "../lib/supabaseClient"
-// import { withRoleProtection } from '../components/withRoleProtection'
+import { withRoleProtection } from '../components/withRoleProtection'
 import Cleave from "cleave.js/react"
 
-export default function CadastroEditoras() {
+function CadastroEditoras() {
   const [form, setForm] = useState({ nome: "", email: "", telefone: "" });
   const [msg, setMsg] = useState("");
 
@@ -90,4 +90,4 @@ export default function CadastroEditoras() {
 }
 
 
-// export default withRoleProtection(CadastroEditoras, ['funcionario'])
+export default withRoleProtection(CadastroEditoras, ['funcionario'])
