@@ -1,10 +1,12 @@
 'use client'
+
+import { withRoleProtection } from '../../../components/withRoleProtection'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabaseClient'
 import Cleave from 'cleave.js/react'
 
-export default function EditarLivro() {
+function EditarLivro() {
   const { id } = useParams()
   const router = useRouter()
 
@@ -95,12 +97,30 @@ export default function EditarLivro() {
       <h1>Editar Livro</h1>
 
       <input name="nome" value={form.nome} onChange={handleChange} placeholder="Nome" />
-      <input name="ano_publicacao" value={form.ano_publicacao} onChange={handleChange} placeholder="Ano de Publicação" />
+      <input
+        name="ano_publicacao"
+        value={form.ano_publicacao}
+        onChange={handleChange}
+        placeholder="Ano de Publicação"
+      />
       <input name="categoria" value={form.categoria} onChange={handleChange} placeholder="Categoria" />
       <input name="autor" value={form.autor} onChange={handleChange} placeholder="Autor" />
-      <input name="q_disponivel" value={form.q_disponivel} onChange={handleChange} placeholder="Quantidade Disponível" />
-      <Cleave name="isbn" value={form.isbn} onChange={handleChange} options={{delimiters: ['-', '-', '-', '-'], blocks: [3, 1, 2, 6, 1], numericOnly: true}}/>
+      <input
+        name="q_disponivel"
+        value={form.q_disponivel}
+        onChange={handleChange}
+        placeholder="Quantidade Disponível"
+      />
+      <Cleave
+        name="isbn"
+        value={form.isbn}
+        onChange={handleChange}
+        options={{ delimiters: ['-', '-', '-', '-'], blocks: [3, 1, 2, 6, 1], numericOnly: true }}
+      />
       <button type="submit">Salvar</button>
     </form>
   )
 }
+
+// Protege para que somente usuários com role 'funcionario' acessem
+export default withRoleProtection(EditarLivro, ['funcionario'])

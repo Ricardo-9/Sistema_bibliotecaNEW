@@ -20,6 +20,7 @@ function TelaInicial() {
         <button onClick={() => navegar('/c_livros')}>Cadastro de Livros</button>
         <button onClick={() => navegar('/c_emprestimos')}>Cadastro de Empréstimos</button>
         <button onClick={() => navegar('/c_editoras')}>Cadastro de Editoras</button>
+        <button onClick={() => navegar('/main_pesquisa')}>Pesquisa</button>
       </div>
        
     </main>

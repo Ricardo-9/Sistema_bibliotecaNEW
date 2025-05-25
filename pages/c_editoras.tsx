@@ -1,11 +1,12 @@
 'use client'
-
+import { useRouter } from 'next/navigation'
 import { useState } from "react"
 import { supabase } from "../lib/supabaseClient"
 import { withRoleProtection } from '../components/withRoleProtection'
 import Cleave from "cleave.js/react"
 
 function CadastroEditoras() {
+  const router = useRouter()
   const [form, setForm] = useState({ nome: "", email: "", telefone: "" });
   const [msg, setMsg] = useState("");
 
@@ -84,6 +85,12 @@ function CadastroEditoras() {
         />
         <button type="submit">Cadastrar</button>
       </form>
+      <button
+        className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        onClick={() => router.push('/dashboard')}
+      >
+        Voltar
+      </button>
       {msg && <p>{msg}</p>}
     </div>
   );

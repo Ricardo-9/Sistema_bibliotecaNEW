@@ -1,7 +1,9 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
+import { withRoleProtection } from '../components/withRoleProtection'
 
 type Livros = {
   id: string
@@ -13,7 +15,11 @@ type Livros = {
   isbn: string
 }
 
-export default function PesLivros() {
+type Props = {
+  role: string
+}
+
+function PesLivros({ role }: Props) {
   const router = useRouter()
   const [livros, setLivros] = useState<Livros[]>([])
   const [filtroNome, setFiltroNome] = useState('')
@@ -35,7 +41,7 @@ export default function PesLivros() {
       console.error(error)
       alert(error.message)
     } else {
-      setLivros(data)
+      setLivros(data || [])
     }
   }
 
@@ -51,7 +57,7 @@ export default function PesLivros() {
   const handlePesquisar = () => {
     fetchLivros(filtroNome)
   }
-  
+
   return (
     <div>
       <h1>Pesquisar Livros</h1>
@@ -63,9 +69,7 @@ export default function PesLivros() {
           onChange={(e) => setFiltroNome(e.target.value)}
           placeholder="Digite o nome do livro"
         />
-        <button onClick={handlePesquisar}>
-          Pesquisar
-        </button>
+        <button onClick={handlePesquisar}>Pesquisar</button>
         <button onClick={() => router.push('/c_livros')}>Cadastrar livro</button>
       </div>
 
@@ -96,11 +100,12 @@ export default function PesLivros() {
                 <td>{livro.q_disponivel}</td>
                 <td>{livro.isbn}</td>
                 <td>
-                  <button
-                    onClick={() => deleteLivro(livro.id)}>
-                    Excluir
-                  </button>
-                  <button onClick={() => router.push(`/updates/update_livros/${livro.id}`)}>Editar</button>
+                  {role === 'funcionario' && (
+                    <>
+                      <button onClick={() => deleteLivro(livro.id)}>Excluir</button>
+                      <button onClick={() => router.push(`/updates/update_livros/${livro.id}`)}>Editar</button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -110,3 +115,5 @@ export default function PesLivros() {
     </div>
   )
 }
+
+export default withRoleProtection(PesLivros, ['aluno', 'funcionario'])

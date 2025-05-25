@@ -1,10 +1,12 @@
 'use client'
+
+import { withRoleProtection } from '../../../components/withRoleProtection'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabaseClient'
 import Cleave from 'cleave.js/react'
 
-export default function EditarLivro() {
+function EditarAluno() {
   const { id } = useParams()
   const router = useRouter()
 
@@ -63,67 +65,67 @@ export default function EditarLivro() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-  const cpfLimpo = limparNumero(formData.cpf).trim()
-  const telefoneLimpo = limparNumero(formData.telefone).trim()
-  const matriculaLimpa = formData.matricula.trim()
+    const cpfLimpo = limparNumero(formData.cpf).trim()
+    const telefoneLimpo = limparNumero(formData.telefone).trim()
+    const matriculaLimpa = formData.matricula.trim()
 
-  const { data: duplicada, error: erroBusca } = await supabase
-    .from('alunos')
-    .select('*')
-    .eq('cpf', cpfLimpo)
-    .neq('id', id)
+    const { data: duplicada, error: erroBusca } = await supabase
+      .from('alunos')
+      .select('*')
+      .eq('cpf', cpfLimpo)
+      .neq('id', id)
 
-  if (erroBusca) {
-    alert('Erro ao verificar duplicidade')
-    return
+    if (erroBusca) {
+      alert('Erro ao verificar duplicidade')
+      return
+    }
+
+    if (duplicada && duplicada.length > 0) {
+      alert('Já existe um aluno com esse CPF.')
+      return
+    }
+
+    const { data: duplicada2, error: erroBusca2 } = await supabase
+      .from('alunos')
+      .select('*')
+      .eq('matricula', matriculaLimpa)
+      .neq('id', id)
+
+    if (erroBusca2) {
+      alert('Erro ao verificar duplicidade')
+      return
+    }
+
+    if (duplicada2 && duplicada2.length > 0) {
+      alert('Já existe um aluno com essa Matrícula.')
+      return
+    }
+
+    const { error } = await supabase
+      .from('alunos')
+      .update({
+        nome: formData.nome.trim(),
+        cpf: cpfLimpo,
+        matricula: matriculaLimpa,
+        endereco: formData.endereco.trim(),
+        email: formData.email.trim(),
+        telefone: telefoneLimpo,
+        serie: formData.serie.trim(),
+        curso: formData.curso.trim()
+      })
+      .eq('id', id)
+
+    if (error) {
+      console.error(error)
+      alert('Erro ao atualizar')
+    } else {
+      router.push('/pesq_alunos')
+    }
   }
-
-  if (duplicada && duplicada.length > 0) {
-    alert('Já existe um aluno com esse CPF.')
-    return
-  }
-
-  const { data: duplicada2, error: erroBusca2 } = await supabase
-    .from('alunos')
-    .select('*')
-    .eq('matricula', matriculaLimpa)
-    .neq('id', id)
-
-  if (erroBusca2) {
-    alert('Erro ao verificar duplicidade')
-    return
-  }
-
-  if (duplicada2 && duplicada2.length > 0) {
-    alert('Já existe um aluno com essa Matrícula.')
-    return
-  }
-
-  const { error } = await supabase
-    .from('alunos')
-    .update({
-      nome: formData.nome.trim(),
-      cpf: cpfLimpo,
-      matricula: matriculaLimpa,
-      endereco: formData.endereco.trim(),
-      email: formData.email.trim(),
-      telefone: telefoneLimpo,
-      serie: formData.serie.trim(),
-      curso: formData.curso.trim()
-    })
-    .eq('id', id)
-
-  if (error) {
-    console.error(error)
-    alert('Erro ao atualizar')
-  } else {
-    router.push('/pesq_alunos')
-  }
-}
 
   return (
     <form onSubmit={handleSubmit}>
-      <h1>Editar Livro</h1>
+      <h1>Editar Aluno</h1>
       <input name="nome" placeholder="Nome" required onChange={handleChange} value={formData.nome} />
       <Cleave
         name="cpf"
@@ -150,3 +152,6 @@ export default function EditarLivro() {
     </form>
   )
 }
+
+// ✅ Protegido apenas para funcionários
+export default withRoleProtection(EditarAluno, ['funcionario'])

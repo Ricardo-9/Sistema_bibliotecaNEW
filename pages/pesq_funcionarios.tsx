@@ -1,7 +1,9 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
+import { withRoleProtection } from '../components/withRoleProtection'
 
 type Funcionarios = {
   id: string
@@ -13,7 +15,11 @@ type Funcionarios = {
   telefone: string
 }
 
-export default function PesqFuncionarios() {
+type Props = {
+  role: string
+}
+
+function PesqFuncionarios({ role }: Props) {
   const router = useRouter()
   const [funcionarios, setFuncionarios] = useState<Funcionarios[]>([])
   const [filtroNome, setFiltroNome] = useState('')
@@ -35,7 +41,7 @@ export default function PesqFuncionarios() {
       console.error(error)
       alert(error.message)
     } else {
-      setFuncionarios(data)
+      setFuncionarios(data || [])
     }
   }
 
@@ -51,7 +57,7 @@ export default function PesqFuncionarios() {
   const handlePesquisar = () => {
     fetchFuncionarios(filtroNome)
   }
-  
+
   return (
     <div>
       <h1>Pesquisar funcionarios</h1>
@@ -63,9 +69,7 @@ export default function PesqFuncionarios() {
           onChange={(e) => setFiltroNome(e.target.value)}
           placeholder="Digite o nome do funcionário"
         />
-        <button onClick={handlePesquisar}>
-          Pesquisar
-        </button>
+        <button onClick={handlePesquisar}>Pesquisar</button>
         <button onClick={() => router.push('/signup-funcionario')}>Cadastrar Funcionário</button>
       </div>
 
@@ -96,11 +100,12 @@ export default function PesqFuncionarios() {
                 <td>{funcionario.email}</td>
                 <td>{funcionario.telefone}</td>
                 <td>
-                  <button
-                    onClick={() => deleteFuncionarios(funcionario.id)}>
-                    Excluir
-                  </button>
-                  <button onClick={() => router.push(`/updates/update_funcionarios/${funcionario.id}`)}>Editar</button>
+                  {role === 'funcionario' && (
+                    <>
+                      <button onClick={() => deleteFuncionarios(funcionario.id)}>Excluir</button>
+                      <button onClick={() => router.push(`/updates/update_funcionarios/${funcionario.id}`)}>Editar</button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -110,3 +115,5 @@ export default function PesqFuncionarios() {
     </div>
   )
 }
+
+export default withRoleProtection(PesqFuncionarios, ['aluno', 'funcionario'])

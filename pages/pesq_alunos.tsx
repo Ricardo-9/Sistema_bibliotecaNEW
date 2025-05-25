@@ -1,7 +1,9 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
+import { withRoleProtection } from '../components/withRoleProtection'
 
 type Alunos = {
   id: string
@@ -15,7 +17,11 @@ type Alunos = {
   curso: string
 }
 
-export default function PesqAlunos() {
+type Props = {
+  role: string
+}
+
+function PesqAlunos({ role }: Props) {
   const router = useRouter()
   const [alunos, setAlunos] = useState<Alunos[]>([])
   const [filtroNome, setFiltroNome] = useState('')
@@ -37,7 +43,7 @@ export default function PesqAlunos() {
       console.error(error)
       alert(error.message)
     } else {
-      setAlunos(data)
+      setAlunos(data || [])
     }
   }
 
@@ -53,7 +59,7 @@ export default function PesqAlunos() {
   const handlePesquisar = () => {
     fetchAlunos(filtroNome)
   }
-  
+
   return (
     <div>
       <h1>Pesquisar alunos</h1>
@@ -65,9 +71,7 @@ export default function PesqAlunos() {
           onChange={(e) => setFiltroNome(e.target.value)}
           placeholder="Digite o nome do aluno"
         />
-        <button onClick={handlePesquisar}>
-          Pesquisar
-        </button>
+        <button onClick={handlePesquisar}>Pesquisar</button>
         <button onClick={() => router.push('/signup-aluno')}>Cadastrar Aluno</button>
       </div>
 
@@ -102,11 +106,12 @@ export default function PesqAlunos() {
                 <td>{aluno.serie}</td>
                 <td>{aluno.curso}</td>
                 <td>
-                  <button
-                    onClick={() => deleteAluno(aluno.id)}>
-                    Excluir
-                  </button>
-                  <button onClick={() => router.push(`/updates/update_alunos/${aluno.id}`)}>Editar</button>
+                  {role === 'funcionario' && (
+                    <>
+                      <button onClick={() => deleteAluno(aluno.id)}>Excluir</button>
+                      <button onClick={() => router.push(`/updates/update_alunos/${aluno.id}`)}>Editar</button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -116,3 +121,5 @@ export default function PesqAlunos() {
     </div>
   )
 }
+
+export default withRoleProtection(PesqAlunos, ['aluno', 'funcionario'])
