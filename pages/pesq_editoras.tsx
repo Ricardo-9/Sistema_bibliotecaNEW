@@ -1,7 +1,9 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
+import { withRoleProtection } from '../components/withRoleProtection'
 
 type Editoras = {
   id: string
@@ -10,7 +12,11 @@ type Editoras = {
   telefone: string
 }
 
-export default function PesqEditoras() {
+type Props = {
+  role: string
+}
+
+function PesqEditoras({ role }: Props) {
   const router = useRouter()
   const [editoras, setEditoras] = useState<Editoras[]>([])
   const [filtroNome, setFiltroNome] = useState('')
@@ -36,7 +42,7 @@ export default function PesqEditoras() {
       console.error(error)
       alert(error.message)
     } else {
-      setEditoras(data)
+      setEditoras(data || [])
     }
   }
 
@@ -100,3 +106,6 @@ export default function PesqEditoras() {
     </div>
   )
 }
+
+// ✅ Somente funcionários podem acessar essa página
+export default withRoleProtection(PesqEditoras, ['funcionario'])

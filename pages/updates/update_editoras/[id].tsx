@@ -14,6 +14,16 @@ function EditarEditora() {
   const [email, setEmail] = useState('')
   const [telefone, setTelefone] = useState('')
 
+  // Função para normalizar o nome (trim, lowercase e espaços simples)
+  function normalizarNome(str: string) {
+    return str.trim().toLowerCase().replace(/\s+/g, ' ')
+  }
+
+  // Remove todos os caracteres que não sejam dígitos
+  function limparNumero(str: string) {
+    return str.replace(/\D/g, '')
+  }
+
   useEffect(() => {
     const fetchEditora = async () => {
       const { data, error } = await supabase
@@ -40,10 +50,19 @@ function EditarEditora() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const { data: duplicada, error: erroBusca } = await supabase
+    const nomeNormalizado = normalizarNome(nome)
+    const telefoneLimpo = limparNumero(telefone)
+
+    // Validação do telefone: deve ter 10 ou 11 dígitos
+    if (!/^\d{10,11}$/.test(telefoneLimpo)) {
+      alert('O telefone deve conter 10 ou 11 dígitos numéricos.')
+      return
+    }
+
+    // Busca todas as editoras exceto a que estamos editando
+    const { data: todasEditoras, error: erroBusca } = await supabase
       .from('editoras')
-      .select('*')
-      .eq('nome', nome)
+      .select('id, nome')
       .neq('id', id)
 
     if (erroBusca) {
@@ -51,14 +70,20 @@ function EditarEditora() {
       return
     }
 
-    if (duplicada && duplicada.length > 0) {
+    // Verifica duplicidade do nome normalizado
+    const nomeDuplicado = todasEditoras?.some(editora =>
+      normalizarNome(editora.nome) === nomeNormalizado
+    )
+
+    if (nomeDuplicado) {
       alert('Já existe uma editora com esse nome.')
       return
     }
 
+    // Atualiza dados da editora
     const { error } = await supabase
       .from('editoras')
-      .update({ nome, email, telefone })
+      .update({ nome, email, telefone: telefoneLimpo })
       .eq('id', id)
 
     if (error) {
@@ -75,11 +100,14 @@ function EditarEditora() {
         value={nome}
         onChange={e => setNome(e.target.value)}
         placeholder="Nome"
+        required
       />
       <input
         value={email}
         onChange={e => setEmail(e.target.value)}
         placeholder="Email"
+        type="email"
+        required
       />
       <Cleave
         name="telefone"
@@ -91,6 +119,7 @@ function EditarEditora() {
         }}
         value={telefone}
         onChange={e => setTelefone(e.target.value)}
+        required
       />
       <button type="submit">Salvar</button>
     </form>

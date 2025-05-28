@@ -68,39 +68,69 @@ function EditarAluno() {
     const cpfLimpo = limparNumero(formData.cpf).trim()
     const telefoneLimpo = limparNumero(formData.telefone).trim()
     const matriculaLimpa = formData.matricula.trim()
+    const nomeLimpo = formData.nome.trim().toLowerCase().replace(/\s+/g, ' ')
 
-    const { data: duplicada, error: erroBusca } = await supabase
+    // Validação matrícula - exatamente 7 dígitos numéricos
+    if (!/^\d{7}$/.test(matriculaLimpa)) {
+      alert('A matrícula deve conter exatamente 7 dígitos numéricos.')
+      return
+    }
+
+    // Verifica duplicidade do CPF
+    const { data: duplicadaCPF, error: erroBuscaCPF } = await supabase
       .from('alunos')
       .select('*')
       .eq('cpf', cpfLimpo)
       .neq('id', id)
 
-    if (erroBusca) {
-      alert('Erro ao verificar duplicidade')
+    if (erroBuscaCPF) {
+      alert('Erro ao verificar duplicidade do CPF')
       return
     }
 
-    if (duplicada && duplicada.length > 0) {
+    if (duplicadaCPF && duplicadaCPF.length > 0) {
       alert('Já existe um aluno com esse CPF.')
       return
     }
 
-    const { data: duplicada2, error: erroBusca2 } = await supabase
+    // Verifica duplicidade da matrícula
+    const { data: duplicadaMatricula, error: erroBuscaMatricula } = await supabase
       .from('alunos')
       .select('*')
       .eq('matricula', matriculaLimpa)
       .neq('id', id)
 
-    if (erroBusca2) {
-      alert('Erro ao verificar duplicidade')
+    if (erroBuscaMatricula) {
+      alert('Erro ao verificar duplicidade da matrícula')
       return
     }
 
-    if (duplicada2 && duplicada2.length > 0) {
+    if (duplicadaMatricula && duplicadaMatricula.length > 0) {
       alert('Já existe um aluno com essa Matrícula.')
       return
     }
 
+    // Verifica duplicidade do nome (tratando espaços e caixa)
+    const { data: todosAlunos, error: erroBuscaNome } = await supabase
+      .from('alunos')
+      .select('id, nome')
+      .neq('id', id)
+
+    if (erroBuscaNome) {
+      alert('Erro ao verificar duplicidade do nome')
+      return
+    }
+
+    const nomeDuplicado = todosAlunos?.some(aluno =>
+      aluno.nome.trim().toLowerCase().replace(/\s+/g, ' ') === nomeLimpo
+    )
+
+    if (nomeDuplicado) {
+      alert('Já existe um aluno com esse nome.')
+      return
+    }
+
+    // Atualiza dados
     const { error } = await supabase
       .from('alunos')
       .update({

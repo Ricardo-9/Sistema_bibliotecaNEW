@@ -19,6 +19,16 @@ function EditarLivro() {
     q_disponivel: ''
   })
 
+  // Normaliza nome para comparar (trim, lowercase, espaços únicos)
+  function normalizarNome(str: string) {
+    return str.trim().toLowerCase().replace(/\s+/g, ' ')
+  }
+
+  // Remove tudo que não é dígito
+  function limparNumero(str: string) {
+    return str.replace(/\D/g, '')
+  }
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({
       ...form,
@@ -46,7 +56,7 @@ function EditarLivro() {
           categoria: data.categoria,
           isbn: data.isbn,
           autor: data.autor,
-          q_disponivel: data.q_disponivel
+          q_disponivel: String(data.q_disponivel)
         })
       }
     }
@@ -57,18 +67,49 @@ function EditarLivro() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const { data: duplicada, error: erroBusca } = await supabase
-      .from('livros')
-      .select('*')
-      .eq('isbn', form.isbn)
-      .neq('id', id)
+    const nomeNormalizado = normalizarNome(form.nome)
+    const isbnLimpo = limparNumero(form.isbn)
+    const quantidade = Number(form.q_disponivel)
 
-    if (erroBusca) {
-      alert('Erro ao verificar duplicidade')
+    // Validações básicas
+    if (!nomeNormalizado) {
+      alert('O nome do livro é obrigatório.')
       return
     }
 
-    if (duplicada && duplicada.length > 0) {
+    if (!isbnLimpo || (isbnLimpo.length !== 13 && isbnLimpo.length !== 10)) {
+      alert('O ISBN deve conter 10 ou 13 dígitos numéricos.')
+      return
+    }
+
+    if (!Number.isInteger(quantidade) || quantidade < 0) {
+      alert('A quantidade disponível deve ser um número inteiro positivo.')
+      return
+    }
+
+    // Buscar todos os livros exceto o atual para validar duplicidade de nome
+    const { data: livros, error: erroBuscaNome } = await supabase
+      .from('livros')
+      .select('id, nome, isbn')
+      .neq('id', id)
+
+    if (erroBuscaNome) {
+      alert('Erro ao verificar duplicidade do nome')
+      return
+    }
+
+    // Verificar duplicidade do nome
+    const nomeDuplicado = livros?.some(l =>
+      normalizarNome(l.nome) === nomeNormalizado
+    )
+    if (nomeDuplicado) {
+      alert('Já existe um livro com esse nome.')
+      return
+    }
+
+    // Verificar duplicidade do ISBN
+    const isbnDuplicado = livros?.some(l => limparNumero(l.isbn) === isbnLimpo)
+    if (isbnDuplicado) {
       alert('Já existe um livro com esse ISBN.')
       return
     }
@@ -76,12 +117,12 @@ function EditarLivro() {
     const { error } = await supabase
       .from('livros')
       .update({
-        nome: form.nome,
-        ano_publicacao: form.ano_publicacao,
-        categoria: form.categoria,
-        isbn: form.isbn,
-        autor: form.autor,
-        q_disponivel: form.q_disponivel
+        nome: form.nome.trim(),
+        ano_publicacao: form.ano_publicacao.trim(),
+        categoria: form.categoria.trim(),
+        isbn: form.isbn.trim(),
+        autor: form.autor.trim(),
+        q_disponivel: quantidade
       })
       .eq('id', id)
 
@@ -96,26 +137,46 @@ function EditarLivro() {
     <form onSubmit={handleSubmit}>
       <h1>Editar Livro</h1>
 
-      <input name="nome" value={form.nome} onChange={handleChange} placeholder="Nome" />
+      <input
+        name="nome"
+        value={form.nome}
+        onChange={handleChange}
+        placeholder="Nome"
+        required
+      />
       <input
         name="ano_publicacao"
         value={form.ano_publicacao}
         onChange={handleChange}
         placeholder="Ano de Publicação"
       />
-      <input name="categoria" value={form.categoria} onChange={handleChange} placeholder="Categoria" />
-      <input name="autor" value={form.autor} onChange={handleChange} placeholder="Autor" />
+      <input
+        name="categoria"
+        value={form.categoria}
+        onChange={handleChange}
+        placeholder="Categoria"
+      />
+      <input
+        name="autor"
+        value={form.autor}
+        onChange={handleChange}
+        placeholder="Autor"
+      />
       <input
         name="q_disponivel"
         value={form.q_disponivel}
         onChange={handleChange}
         placeholder="Quantidade Disponível"
+        type="number"
+        min="0"
       />
       <Cleave
         name="isbn"
         value={form.isbn}
         onChange={handleChange}
         options={{ delimiters: ['-', '-', '-', '-'], blocks: [3, 1, 2, 6, 1], numericOnly: true }}
+        placeholder="ISBN"
+        required
       />
       <button type="submit">Salvar</button>
     </form>
