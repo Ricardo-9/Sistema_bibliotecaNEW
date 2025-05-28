@@ -19,12 +19,10 @@ function EditarLivro() {
     q_disponivel: ''
   })
 
-  // Normaliza nome para comparar (trim, lowercase, espaços únicos)
   function normalizarNome(str: string) {
     return str.trim().toLowerCase().replace(/\s+/g, ' ')
   }
 
-  // Remove tudo que não é dígito
   function limparNumero(str: string) {
     return str.replace(/\D/g, '')
   }
@@ -70,14 +68,17 @@ function EditarLivro() {
     const nomeNormalizado = normalizarNome(form.nome)
     const isbnLimpo = limparNumero(form.isbn)
     const quantidade = Number(form.q_disponivel)
+    const ano = Number(form.ano_publicacao)
+    const anoAtual = new Date().getFullYear()
 
-    // Validações básicas
+    // === Validações ===
+
     if (!nomeNormalizado) {
       alert('O nome do livro é obrigatório.')
       return
     }
 
-    if (!isbnLimpo || (isbnLimpo.length !== 13 && isbnLimpo.length !== 10)) {
+    if (!isbnLimpo || (isbnLimpo.length !== 10 && isbnLimpo.length !== 13)) {
       alert('O ISBN deve conter 10 ou 13 dígitos numéricos.')
       return
     }
@@ -87,27 +88,28 @@ function EditarLivro() {
       return
     }
 
-    // Buscar todos os livros exceto o atual para validar duplicidade de nome
-    const { data: livros, error: erroBuscaNome } = await supabase
+    if (!form.ano_publicacao || isNaN(ano) || ano < 0 || ano > anoAtual) {
+      alert(`O ano de publicação deve ser um número válido entre 0 e ${anoAtual}.`)
+      return
+    }
+
+    // Verificar duplicidade de nome e ISBN
+    const { data: livros, error: erroBusca } = await supabase
       .from('livros')
       .select('id, nome, isbn')
       .neq('id', id)
 
-    if (erroBuscaNome) {
-      alert('Erro ao verificar duplicidade do nome')
+    if (erroBusca) {
+      alert('Erro ao verificar duplicidade')
       return
     }
 
-    // Verificar duplicidade do nome
-    const nomeDuplicado = livros?.some(l =>
-      normalizarNome(l.nome) === nomeNormalizado
-    )
+    const nomeDuplicado = livros?.some(l => normalizarNome(l.nome) === nomeNormalizado)
     if (nomeDuplicado) {
       alert('Já existe um livro com esse nome.')
       return
     }
 
-    // Verificar duplicidade do ISBN
     const isbnDuplicado = livros?.some(l => limparNumero(l.isbn) === isbnLimpo)
     if (isbnDuplicado) {
       alert('Já existe um livro com esse ISBN.')
@@ -149,6 +151,10 @@ function EditarLivro() {
         value={form.ano_publicacao}
         onChange={handleChange}
         placeholder="Ano de Publicação"
+        type="number"
+        min="0"
+        max={new Date().getFullYear()}
+        required
       />
       <input
         name="categoria"
@@ -169,12 +175,17 @@ function EditarLivro() {
         placeholder="Quantidade Disponível"
         type="number"
         min="0"
+        required
       />
       <Cleave
         name="isbn"
         value={form.isbn}
         onChange={handleChange}
-        options={{ delimiters: ['-', '-', '-', '-'], blocks: [3, 1, 2, 6, 1], numericOnly: true }}
+        options={{
+          delimiters: ['-', '-', '-', '-'],
+          blocks: [3, 1, 2, 6, 1],
+          numericOnly: true
+        }}
         placeholder="ISBN"
         required
       />
@@ -183,5 +194,4 @@ function EditarLivro() {
   )
 }
 
-// Protege para que somente usuários com role 'funcionario' acessem
 export default withRoleProtection(EditarLivro, ['funcionario'])
