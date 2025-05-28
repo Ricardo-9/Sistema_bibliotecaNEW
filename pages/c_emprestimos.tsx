@@ -99,9 +99,10 @@ function CadastroEmprestimos() {
     ])
 
     if (erroInsercao) {
+      console.error('Erro ao inserir empréstimo:', erroInsercao)
       setMsg('Erro ao registrar empréstimo')
       return
-    }
+      }
 
     const { error: erroAtualizacao } = await supabase
       .from('livros')

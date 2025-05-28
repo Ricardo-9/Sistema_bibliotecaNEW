@@ -60,7 +60,7 @@ function PesqFuncionarios({ role }: Props) {
 
   return (
     <div>
-      <h1>Pesquisar funcionarios</h1>
+      <h1>Pesquisar funcionários</h1>
 
       <div>
         <input
