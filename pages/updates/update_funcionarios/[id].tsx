@@ -19,6 +19,12 @@ function EditarFuncionario() {
     telefone: ''
   })
 
+  // Normaliza nome para comparar (trim, lowercase, espaços únicos)
+  function normalizarNome(str: string) {
+    return str.trim().toLowerCase().replace(/\s+/g, ' ')
+  }
+
+  // Remove tudo que não é dígito
   function limparNumero(str: string) {
     return str.replace(/\D/g, '')
   }
@@ -61,21 +67,39 @@ function EditarFuncionario() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    const nomeNormalizado = normalizarNome(formData.nome)
     const cpfLimpo = limparNumero(formData.cpf).trim()
     const telefoneLimpo = limparNumero(formData.telefone).trim()
 
-    const { data: duplicada, error: erroBusca } = await supabase
-      .from('funcionarios')
-      .select('*')
-      .eq('cpf', cpfLimpo)
-      .neq('id', id)
-
-    if (erroBusca) {
-      alert('Erro ao verificar duplicidade')
+    // Validação do telefone: 10 ou 11 dígitos
+    if (!/^\d{10,11}$/.test(telefoneLimpo)) {
+      alert('O telefone deve conter 10 ou 11 dígitos numéricos.')
       return
     }
 
-    if (duplicada && duplicada.length > 0) {
+    // Buscar todos os funcionários exceto o atual para validar nome duplicado
+    const { data: funcionarios, error: erroBuscaNome } = await supabase
+      .from('funcionarios')
+      .select('id, nome, cpf')
+      .neq('id', id)
+
+    if (erroBuscaNome) {
+      alert('Erro ao verificar duplicidade do nome')
+      return
+    }
+
+    // Verificar duplicidade do nome
+    const nomeDuplicado = funcionarios?.some(f =>
+      normalizarNome(f.nome) === nomeNormalizado
+    )
+    if (nomeDuplicado) {
+      alert('Já existe um funcionário com esse nome.')
+      return
+    }
+
+    // Verificar duplicidade do CPF
+    const cpfDuplicado = funcionarios?.some(f => limparNumero(f.cpf) === cpfLimpo)
+    if (cpfDuplicado) {
       alert('Já existe um funcionário com esse CPF.')
       return
     }
@@ -103,7 +127,13 @@ function EditarFuncionario() {
   return (
     <form onSubmit={handleSubmit}>
       <h1>Editar Funcionário</h1>
-      <input name="nome" placeholder="Nome" required onChange={handleChange} value={formData.nome} />
+      <input
+        name="nome"
+        placeholder="Nome"
+        required
+        onChange={handleChange}
+        value={formData.nome}
+      />
       <Cleave
         name="cpf"
         placeholder="CPF"
@@ -112,9 +142,28 @@ function EditarFuncionario() {
         onChange={handleChange}
         options={{ blocks: [3, 3, 3, 2], delimiters: ['.', '.', '-'], numericOnly: true }}
       />
-      <input name="funcao" placeholder="Função" required onChange={handleChange} value={formData.funcao} />
-      <input name="endereco" placeholder="Endereço" required onChange={handleChange} value={formData.endereco} />
-      <input type="email" name="email" placeholder="Email" required onChange={handleChange} value={formData.email} />
+      <input
+        name="funcao"
+        placeholder="Função"
+        required
+        onChange={handleChange}
+        value={formData.funcao}
+      />
+      <input
+        name="endereco"
+        placeholder="Endereço"
+        required
+        onChange={handleChange}
+        value={formData.endereco}
+      />
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        required
+        onChange={handleChange}
+        value={formData.email}
+      />
       <Cleave
         name="telefone"
         placeholder="Telefone"

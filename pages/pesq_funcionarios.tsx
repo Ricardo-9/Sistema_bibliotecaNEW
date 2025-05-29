@@ -60,7 +60,7 @@ function PesqFuncionarios({ role }: Props) {
 
   return (
     <div>
-      <h1>Pesquisar funcionários</h1>
+
 
       <div>
         <input
@@ -115,5 +115,4 @@ function PesqFuncionarios({ role }: Props) {
     </div>
   )
 }
-
-export default withRoleProtection(PesqFuncionarios, ['aluno', 'funcionario'])
+export default withRoleProtection(PesqFuncionarios, ['funcionario'])

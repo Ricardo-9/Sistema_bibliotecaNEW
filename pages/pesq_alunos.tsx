@@ -106,12 +106,8 @@ function PesqAlunos({ role }: Props) {
                 <td>{aluno.serie}</td>
                 <td>{aluno.curso}</td>
                 <td>
-                  {role === 'funcionario' && (
-                    <>
-                      <button onClick={() => deleteAluno(aluno.id)}>Excluir</button>
-                      <button onClick={() => router.push(`/updates/update_alunos/${aluno.id}`)}>Editar</button>
-                    </>
-                  )}
+                  <button onClick={() => deleteAluno(aluno.id)}>Excluir</button>
+                  <button onClick={() => router.push(`/updates/update_alunos/${aluno.id}`)}>Editar</button>
                 </td>
               </tr>
             ))}
@@ -122,4 +118,5 @@ function PesqAlunos({ role }: Props) {
   )
 }
 
-export default withRoleProtection(PesqAlunos, ['aluno', 'funcionario'])
+// ✅ Somente funcionários podem acessar essa página
+export default withRoleProtection(PesqAlunos, ['funcionario'])
