@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection' 
 
@@ -11,10 +11,27 @@ function CadastroEmprestimos() {
     nome_pessoa: '',
   })
 
+  const [livrosDisponiveis, setLivrosDisponiveis] = useState<{ id: string; nome: string }[]>([])
   const [msg, setMsg] = useState<string | null>(null)
   const [dataDevolucaoFormatada, setDataDevolucaoFormatada] = useState<string | null>(null)
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  useEffect(() => {
+    async function fetchLivros() {
+      const { data, error } = await supabase
+        .from('livros')
+        .select('id, nome')
+        .gt('q_disponivel', 0)
+        .order('nome')
+
+      if (!error && data) {
+        setLivrosDisponiveis(data)
+      }
+    }
+
+    fetchLivros()
+  }, [])
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
@@ -25,18 +42,25 @@ function CadastroEmprestimos() {
     e.preventDefault()
     setMsg(null)
 
-    const { data: livro, error: erroLivro } = await supabase
-      .from('livros')
-      .select('id, q_disponivel')
-      .ilike('nome', form.nome_livro)
-      .maybeSingle()
+    const livroSelecionado = livrosDisponiveis.find(l => l.id === form.nome_livro)
 
-    if (erroLivro || !livro) {
-      setMsg('Livro não cadastrado')
+    if (!livroSelecionado) {
+      setMsg('Livro não encontrado')
       return
     }
 
-    if (livro.q_disponivel <= 0) {
+    const { data: livroDados, error: erroLivro } = await supabase
+      .from('livros')
+      .select('q_disponivel')
+      .eq('id', form.nome_livro)
+      .maybeSingle()
+
+    if (erroLivro || !livroDados) {
+      setMsg('Erro ao obter dados do livro')
+      return
+    }
+
+    if (livroDados.q_disponivel <= 0) {
       setMsg('Não há exemplares disponíveis')
       return
     }
@@ -74,7 +98,7 @@ function CadastroEmprestimos() {
     const { data: emprestimoExistente } = await supabase
       .from('emprestimos')
       .select('*')
-      .eq('nome_livro', livro.id)
+      .eq('nome_livro', form.nome_livro)
       .eq('solicitante_id', solicitante_id)
       .eq('tipo_solicitante', tipo_solicitante)
       .is('devolvido', null)
@@ -91,7 +115,7 @@ function CadastroEmprestimos() {
 
     const { error: erroInsercao } = await supabase.from('emprestimos').insert([
       {
-        nome_livro: livro.id,
+        nome_livro: form.nome_livro,
         solicitante_id,
         tipo_solicitante,
         data_devolucao: dataDevolucao.toISOString(),
@@ -105,8 +129,8 @@ function CadastroEmprestimos() {
 
     const { error: erroAtualizacao } = await supabase
       .from('livros')
-      .update({ q_disponivel: livro.q_disponivel - 1 })
-      .eq('id', livro.id)
+      .update({ q_disponivel: livroDados.q_disponivel - 1 })
+      .eq('id', form.nome_livro)
 
     if (erroAtualizacao) {
       setMsg('Erro ao atualizar quantidade de livros')
@@ -131,13 +155,21 @@ function CadastroEmprestimos() {
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="nome_livro">Nome do Livro: </label>
-          <input
-            type="text"
+          <select
             name="nome_livro"
             value={form.nome_livro}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="" disabled>
+              Selecione um livro
+            </option>
+            {livrosDisponiveis.map((livro) => (
+              <option key={livro.id} value={livro.id}>
+                {livro.nome}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label htmlFor="nome_pessoa">Nome do Solicitante: </label>
@@ -153,11 +185,10 @@ function CadastroEmprestimos() {
       </form>
       <button
         className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        onClick={() => router.push('/dashboard')}
+        onClick={() => router.push('/tela_inicio')}
       >
         Voltar
       </button>
-      
 
       {msg && <p>{msg}</p>}
       {dataDevolucaoFormatada && (

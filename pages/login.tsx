@@ -16,7 +16,7 @@ export default function Login() {
     if (error) {
       setErro(error.message)
     } else {
-      router.push('/dashboard')
+      router.push('/tela_inicio')
     }
   }
 

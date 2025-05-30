@@ -87,7 +87,7 @@ function CadastroEditoras() {
       </form>
       <button
         className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        onClick={() => router.push('/dashboard')}
+        onClick={() => router.push('/tela_inicio')}
       >
         Voltar
       </button>
