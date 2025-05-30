@@ -119,4 +119,4 @@ function PesqAlunos({ role }: Props) {
 }
 
 // ✅ Somente funcionários podem acessar essa página
-export default withRoleProtection(PesqAlunos, ['funcionario'])
+export default withRoleProtection(PesqAlunos, ['funcionario_administrador'])

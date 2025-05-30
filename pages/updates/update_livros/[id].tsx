@@ -194,4 +194,4 @@ function EditarLivro() {
   )
 }
 
-export default withRoleProtection(EditarLivro, ['funcionario'])
+export default withRoleProtection(EditarLivro, ['funcionario','funcionario_administrador'])

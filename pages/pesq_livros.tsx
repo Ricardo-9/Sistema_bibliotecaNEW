@@ -99,7 +99,7 @@ function PesLivros({ role }: Props) {
                 <td>{livro.autor}</td>
                 <td>{livro.q_disponivel}</td>
                 <td>{livro.isbn}</td>
-                {role === 'funcionario' && (
+                {role === 'funcionario_administrador' && (
                   <td>
                     <button onClick={() => deleteLivro(livro.id)}>Excluir</button>
                     <button onClick={() => router.push(`/updates/update_livros/${livro.id}`)}>Editar</button>
@@ -115,4 +115,4 @@ function PesLivros({ role }: Props) {
 }
 
 // Acesso permitido para alunos e funcionários, mas ações visíveis só para funcionários
-export default withRoleProtection(PesLivros, ['aluno', 'funcionario'])
+export default withRoleProtection(PesLivros, ['aluno', 'funcionario','funcionario_administrador'])

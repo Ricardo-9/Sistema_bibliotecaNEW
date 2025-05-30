@@ -127,4 +127,4 @@ function EditarEditora() {
 }
 
 // Protege a página para somente FUNCIONÁRIOS
-export default withRoleProtection(EditarEditora, ['funcionario'])
+export default withRoleProtection(EditarEditora, ['funcionario','funcionario_administrador'])

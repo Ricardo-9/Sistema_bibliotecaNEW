@@ -28,4 +28,4 @@ function TelaInicial() {
 }
 
 
-export default withRoleProtection(TelaInicial, ['aluno', 'funcionario'])
+export default withRoleProtection(TelaInicial, ['aluno','funcionario', 'funcionario_administrador'])

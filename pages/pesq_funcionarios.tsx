@@ -100,12 +100,11 @@ function PesqFuncionarios({ role }: Props) {
                 <td>{funcionario.email}</td>
                 <td>{funcionario.telefone}</td>
                 <td>
-                  {role === 'funcionario' && (
                     <>
                       <button onClick={() => deleteFuncionarios(funcionario.id)}>Excluir</button>
                       <button onClick={() => router.push(`/updates/update_funcionarios/${funcionario.id}`)}>Editar</button>
                     </>
-                  )}
+                  
                 </td>
               </tr>
             ))}
@@ -117,4 +116,4 @@ function PesqFuncionarios({ role }: Props) {
 }
 
 // ✅ Acesso restrito apenas a funcionários
-export default withRoleProtection(PesqFuncionarios, ['funcionario'])
+export default withRoleProtection(PesqFuncionarios, ['funcionario_administrador'])

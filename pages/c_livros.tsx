@@ -157,4 +157,4 @@ function CadastroLivros() {
 }
 
 
-export default withRoleProtection(CadastroLivros, ['funcionario'])
+export default withRoleProtection(CadastroLivros, ['funcionario','funcionario_administrador'])

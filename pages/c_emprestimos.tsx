@@ -1,8 +1,9 @@
 'use client'
+
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { withRoleProtection } from '../components/withRoleProtection' 
+import { withRoleProtection } from '../components/withRoleProtection'
 
 function CadastroEmprestimos() {
   const router = useRouter()
@@ -13,6 +14,46 @@ function CadastroEmprestimos() {
 
   const [msg, setMsg] = useState<string | null>(null)
   const [dataDevolucaoFormatada, setDataDevolucaoFormatada] = useState<string | null>(null)
+  const [userInfo, setUserInfo] = useState<{ id: string; nome: string; tipo: 'aluno' | 'funcionario' } | null>(null)
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        setMsg('Usuário não autenticado')
+        return
+      }
+
+      const { data: aluno } = await supabase
+        .from('alunos')
+        .select('id, nome')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (aluno) {
+        setUserInfo({ id: aluno.id, nome: aluno.nome, tipo: 'aluno' })
+        return
+      }
+
+      const { data: funcionario } = await supabase
+        .from('funcionarios')
+        .select('id, nome')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (funcionario) {
+        setUserInfo({ id: funcionario.id, nome: funcionario.nome, tipo: 'funcionario' })
+        return
+      }
+
+      setMsg('Usuário não encontrado no sistema')
+    }
+
+    fetchUserInfo()
+  }, [])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({
@@ -24,6 +65,17 @@ function CadastroEmprestimos() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setMsg(null)
+
+    if (!userInfo) {
+      setMsg('Informações do usuário não carregadas')
+      return
+    }
+
+    // Verifica se o nome informado bate com o nome do usuário autenticado
+    if (form.nome_pessoa.trim().toLowerCase() !== userInfo.nome.trim().toLowerCase()) {
+      setMsg('Você só pode fazer empréstimos em seu próprio nome.')
+      return
+    }
 
     const { data: livro, error: erroLivro } = await supabase
       .from('livros')
@@ -41,47 +93,17 @@ function CadastroEmprestimos() {
       return
     }
 
-    let solicitante_id: string | null = null
-    let tipo_solicitante: 'aluno' | 'funcionario' | null = null
-
-    const { data: aluno } = await supabase
-      .from('alunos')
-      .select('id')
-      .ilike('nome', form.nome_pessoa)
-      .maybeSingle()
-
-    if (aluno) {
-      solicitante_id = aluno.id
-      tipo_solicitante = 'aluno'
-    } else {
-      const { data: funcionario } = await supabase
-        .from('funcionarios')
-        .select('id')
-        .ilike('nome', form.nome_pessoa)
-        .maybeSingle()
-
-      if (funcionario) {
-        solicitante_id = funcionario.id
-        tipo_solicitante = 'funcionario'
-      }
-    }
-
-    if (!solicitante_id || !tipo_solicitante) {
-      setMsg('Pessoa não encontrada (aluno ou funcionário)')
-      return
-    }
-
     const { data: emprestimoExistente } = await supabase
       .from('emprestimos')
       .select('*')
       .eq('nome_livro', livro.id)
-      .eq('solicitante_id', solicitante_id)
-      .eq('tipo_solicitante', tipo_solicitante)
+      .eq('solicitante_id', userInfo.id)
+      .eq('tipo_solicitante', userInfo.tipo)
       .is('devolvido', null)
       .maybeSingle()
 
     if (emprestimoExistente) {
-      setMsg('Este usuário já possui este livro emprestado.')
+      setMsg('Você já possui este livro emprestado.')
       return
     }
 
@@ -92,8 +114,8 @@ function CadastroEmprestimos() {
     const { error: erroInsercao } = await supabase.from('emprestimos').insert([
       {
         nome_livro: livro.id,
-        solicitante_id,
-        tipo_solicitante,
+        solicitante_id: userInfo.id,
+        tipo_solicitante: userInfo.tipo,
         data_devolucao: dataDevolucao.toISOString(),
       },
     ])
@@ -140,7 +162,7 @@ function CadastroEmprestimos() {
           />
         </div>
         <div>
-          <label htmlFor="nome_pessoa">Nome do Solicitante: </label>
+          <label htmlFor="nome_pessoa">Seu Nome: </label>
           <input
             type="text"
             name="nome_pessoa"
@@ -157,7 +179,6 @@ function CadastroEmprestimos() {
       >
         Voltar
       </button>
-      
 
       {msg && <p>{msg}</p>}
       {dataDevolucaoFormatada && (
@@ -169,4 +190,4 @@ function CadastroEmprestimos() {
   )
 }
 
-export default withRoleProtection(CadastroEmprestimos, ['aluno', 'funcionario'])
+export default withRoleProtection(CadastroEmprestimos, ['aluno', 'funcionario','funcionario_administrador'])

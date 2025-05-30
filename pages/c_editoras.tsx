@@ -97,4 +97,4 @@ function CadastroEditoras() {
 }
 
 
-export default withRoleProtection(CadastroEditoras, ['funcionario'])
+export default withRoleProtection(CadastroEditoras, ['funcionario','funcionario_administrador'])
