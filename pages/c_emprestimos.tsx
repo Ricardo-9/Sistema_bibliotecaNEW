@@ -1,9 +1,8 @@
 'use client'
-
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { withRoleProtection } from '../components/withRoleProtection'
+import { withRoleProtection } from '../components/withRoleProtection' 
 
 function CadastroEmprestimos() {
   const router = useRouter()
@@ -12,50 +11,27 @@ function CadastroEmprestimos() {
     nome_pessoa: '',
   })
 
+  const [livrosDisponiveis, setLivrosDisponiveis] = useState<{ id: string; nome: string }[]>([])
   const [msg, setMsg] = useState<string | null>(null)
   const [dataDevolucaoFormatada, setDataDevolucaoFormatada] = useState<string | null>(null)
-  const [userInfo, setUserInfo] = useState<{ id: string; nome: string; tipo: 'aluno' | 'funcionario' } | null>(null)
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) {
-        setMsg('Usuário não autenticado')
-        return
-      }
-
-      const { data: aluno } = await supabase
-        .from('alunos')
+    async function fetchLivros() {
+      const { data, error } = await supabase
+        .from('livros')
         .select('id, nome')
-        .eq('user_id', user.id)
-        .maybeSingle()
+        .gt('q_disponivel', 0)
+        .order('nome')
 
-      if (aluno) {
-        setUserInfo({ id: aluno.id, nome: aluno.nome, tipo: 'aluno' })
-        return
+      if (!error && data) {
+        setLivrosDisponiveis(data)
       }
-
-      const { data: funcionario } = await supabase
-        .from('funcionarios')
-        .select('id, nome')
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-      if (funcionario) {
-        setUserInfo({ id: funcionario.id, nome: funcionario.nome, tipo: 'funcionario' })
-        return
-      }
-
-      setMsg('Usuário não encontrado no sistema')
     }
 
-    fetchUserInfo()
+    fetchLivros()
   }, [])
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
@@ -66,44 +42,70 @@ function CadastroEmprestimos() {
     e.preventDefault()
     setMsg(null)
 
-    if (!userInfo) {
-      setMsg('Informações do usuário não carregadas')
+    const livroSelecionado = livrosDisponiveis.find(l => l.id === form.nome_livro)
+
+    if (!livroSelecionado) {
+      setMsg('Livro não encontrado')
       return
     }
 
-    // Verifica se o nome informado bate com o nome do usuário autenticado
-    if (form.nome_pessoa.trim().toLowerCase() !== userInfo.nome.trim().toLowerCase()) {
-      setMsg('Você só pode fazer empréstimos em seu próprio nome.')
-      return
-    }
-
-    const { data: livro, error: erroLivro } = await supabase
+    const { data: livroDados, error: erroLivro } = await supabase
       .from('livros')
-      .select('id, q_disponivel')
-      .ilike('nome', form.nome_livro)
+      .select('q_disponivel')
+      .eq('id', form.nome_livro)
       .maybeSingle()
 
-    if (erroLivro || !livro) {
-      setMsg('Livro não cadastrado')
+    if (erroLivro || !livroDados) {
+      setMsg('Erro ao obter dados do livro')
       return
     }
 
-    if (livro.q_disponivel <= 0) {
+    if (livroDados.q_disponivel <= 0) {
       setMsg('Não há exemplares disponíveis')
+      return
+    }
+
+    let solicitante_id: string | null = null
+    let tipo_solicitante: 'aluno' | 'funcionario' | null = null
+
+    const { data: aluno } = await supabase
+      .from('alunos')
+      .select('id')
+      .ilike('nome', form.nome_pessoa)
+      .maybeSingle()
+
+    if (aluno) {
+      solicitante_id = aluno.id
+      tipo_solicitante = 'aluno'
+    } else {
+      const { data: funcionario } = await supabase
+        .from('funcionarios')
+        .select('id')
+        .ilike('nome', form.nome_pessoa)
+        .maybeSingle()
+
+      if (funcionario) {
+        solicitante_id = funcionario.id
+        tipo_solicitante = 'funcionario'
+      }
+    }
+
+    if (!solicitante_id || !tipo_solicitante) {
+      setMsg('Pessoa não encontrada (aluno ou funcionário)')
       return
     }
 
     const { data: emprestimoExistente } = await supabase
       .from('emprestimos')
       .select('*')
-      .eq('nome_livro', livro.id)
-      .eq('solicitante_id', userInfo.id)
-      .eq('tipo_solicitante', userInfo.tipo)
+      .eq('nome_livro', form.nome_livro)
+      .eq('solicitante_id', solicitante_id)
+      .eq('tipo_solicitante', tipo_solicitante)
       .is('devolvido', null)
       .maybeSingle()
 
     if (emprestimoExistente) {
-      setMsg('Você já possui este livro emprestado.')
+      setMsg('Este usuário já possui este livro emprestado.')
       return
     }
 
@@ -113,9 +115,9 @@ function CadastroEmprestimos() {
 
     const { error: erroInsercao } = await supabase.from('emprestimos').insert([
       {
-        nome_livro: livro.id,
-        solicitante_id: userInfo.id,
-        tipo_solicitante: userInfo.tipo,
+        nome_livro: form.nome_livro,
+        solicitante_id,
+        tipo_solicitante,
         data_devolucao: dataDevolucao.toISOString(),
       },
     ])
@@ -127,8 +129,8 @@ function CadastroEmprestimos() {
 
     const { error: erroAtualizacao } = await supabase
       .from('livros')
-      .update({ q_disponivel: livro.q_disponivel - 1 })
-      .eq('id', livro.id)
+      .update({ q_disponivel: livroDados.q_disponivel - 1 })
+      .eq('id', form.nome_livro)
 
     if (erroAtualizacao) {
       setMsg('Erro ao atualizar quantidade de livros')
@@ -153,16 +155,24 @@ function CadastroEmprestimos() {
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="nome_livro">Nome do Livro: </label>
-          <input
-            type="text"
+          <select
             name="nome_livro"
             value={form.nome_livro}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="" disabled>
+              Selecione um livro
+            </option>
+            {livrosDisponiveis.map((livro) => (
+              <option key={livro.id} value={livro.id}>
+                {livro.nome}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
-          <label htmlFor="nome_pessoa">Seu Nome: </label>
+          <label htmlFor="nome_pessoa">Nome do Solicitante: </label>
           <input
             type="text"
             name="nome_pessoa"
@@ -175,7 +185,7 @@ function CadastroEmprestimos() {
       </form>
       <button
         className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        onClick={() => router.push('/dashboard')}
+        onClick={() => router.push('/tela_inicio')}
       >
         Voltar
       </button>
@@ -190,4 +200,4 @@ function CadastroEmprestimos() {
   )
 }
 
-export default withRoleProtection(CadastroEmprestimos, ['aluno', 'funcionario','funcionario_administrador'])
+export default withRoleProtection(CadastroEmprestimos, ['aluno', 'funcionario'])
