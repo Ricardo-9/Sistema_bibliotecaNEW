@@ -1,25 +1,37 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
+import brasao from './imgs/Bc.png.png'
 
 export default function Home() {
   const [step, setStep] = useState<'initial' | 'role'>('initial')
   const router = useRouter()
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#006400] ">
-      <div className='bg-[#2e8b57] p-96'  style={{ paddingLeft: '1500px', paddingRight: '40px', paddingTop: '20px', paddingBottom: '20px' }}>
-      <h1 className="">Bem-vindo</h1>
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] overflow-hidden">
+  <Image
+    src={brasao}
+    alt="Logo do Ceará"
+    width={600}
+    height={600}
+    className="pointer-events-none absolute top-10 left-0 z-[9999] w-32 sm:w-48 md:w-72 lg:w-[600px] h-auto"
+  />
 
+  <div
+    className="bg-[#2e8b57] rounded-[30px] flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-32 xl:px-64 2xl:px-96 space-y-12 max-w-screen-xl w-full transition-all duration-500 overflow-hidden"
+    style={{ height: '700px' }}
+  >
+    <div className="flex flex-col items-center justify-center h-full space-y-6 sm:space-y-8">
       {step === 'initial' && (
         <>
           <button
-            className="w-full max-w-xs bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 transition-all"
+            className="bg-[#006400] text-white rounded-[50px] text-3xl font-bold px-10 sm:px-20 md:px-[100px] lg:px-[229px] py-[35px] transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#006400] shadow-md hover:bg-[#004d00]"
             onClick={() => router.push('/login')}
           >
             Login
           </button>
           <button
-            className="w-full max-w-xs bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+            className="bg-[#006400] text-white text-3xl font-bold rounded-[50px] px-10 sm:px-20 md:px-[100px] lg:px-[210px] py-[35px] transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#006400] shadow-md hover:bg-[#004d00]"
             onClick={() => setStep('role')}
           >
             Cadastro
@@ -29,28 +41,34 @@ export default function Home() {
 
       {step === 'role' && (
         <>
-          <p className="text-lg font-semibold text-gray-700 mb-6">Você é:</p>
-          <button
-            className="w-full max-w-xs bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4 transition-all"
-            onClick={() => router.push('/signup-aluno')}
-          >
-            Aluno
-          </button>
-          <button
-            className="w-full max-w-xs bg-orange-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4 transition-all"
-            onClick={() => router.push('/signup-funcionario')}
-          >
-            Funcionário
-          </button>
-          <button
-            className="text-blue-500 underline mt-4 hover:text-blue-600 transition-all"
-            onClick={() => setStep('initial')}
-          >
-            Voltar
-          </button>
+          <p className="text-white text-3xl font-bold tracking-wide text-center drop-shadow-md mb-4 sm:mb-6">
+            Selecione sua função:
+          </p>
+
+          <div className="flex flex-col items-center space-y-6">
+            <button
+              className="bg-[#006400] text-white text-3xl font-bold rounded-[50px] px-10 sm:px-20 md:px-[100px] lg:px-[229px] py-[35px] transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#006400] shadow-md hover:bg-[#004d00]"
+              onClick={() => router.push('/signup-aluno')}
+            >
+              Aluno
+            </button>
+            <button
+              className="bg-[#006400] text-white text-3xl font-bold rounded-[50px] px-10 sm:px-20 md:px-[100px] lg:px-[187px] py-[35px] transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#006400] shadow-md hover:bg-[#004d00]"
+              onClick={() => router.push('/signup-funcionario')}
+            >
+              Funcionário
+            </button>
+            <button
+              className="flex items-center gap-2 px-6 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white hover:text-[#006400] transition-all duration-300 shadow-md mt-6"
+              onClick={() => setStep('initial')}
+            >
+              Voltar
+            </button>
+          </div>
         </>
       )}
-      </div>
     </div>
+  </div>
+</div>
   )
 }

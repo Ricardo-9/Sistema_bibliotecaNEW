@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
+import Perfil from './imagens/Perfil_icon.png'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -21,45 +23,51 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-3xl font-semibold text-center text-gray-800 mb-6">Login</h1>
-
+    <div className="min-h-screen bg-[#006400] flex items-center justify-center p-4">
+      <div className="w-full p-64 m-8 bg-[#2e8b57] rounded-lg shadow-md pt-[68px]">
+        <div>
+          <button onClick={() => router.push('/')} className='bg-[#006400] text-white font-bold rounded-full absolute top-16 left-16 px-4 py-2 hover:bg-[#004d00]'>Voltar</button>
+        </div>
+          <div className='flex items-center justify-center'>
+            <Image src={Perfil} alt='Perfil-icon' width={400} className="rounded-lg"/>
+          </div>
         <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-600">Email</label>
           <input
             type="email"
             id="email"
             placeholder="Digite seu email"
-            className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 mt-2 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
         <div className="mb-6">
-          <label htmlFor="senha" className="block text-sm font-medium text-gray-600">Senha</label>
           <input
             type="password"
             id="senha"
             placeholder="Digite sua senha"
-            className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 mt-2 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
           />
         </div>
 
         {erro && <p className="text-red-500 text-sm mb-4">{erro}</p>}
-
-        <button
+        <div className='flex justify-center mt-16'>
+          <button
           onClick={handleLogin}
-          className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-12 py-3 bg-[#006400] text-white rounded-full h-14 font-bold text-lg hover:bg-[#004d00]"
         >
-          Entrar
+          Login
         </button>
+        </div>
+        
+
+
 
         <div className="mt-4 text-center">
-          <a href='/forgot-password' className="text-sm text-blue-500 hover:text-blue-700">Esqueceu sua senha? Clique aqui</a>
+          <a href='/forgot-password' className="text-sm text-white hover:text-white">Esqueceu sua senha? Clique aqui</a>
         </div>
       </div>
     </div>
