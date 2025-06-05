@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { withRoleProtection } from '../components/withRoleProtection'
 
 type EmprestimoBruto = {
   id: string
@@ -26,7 +27,6 @@ type EmprestimoFinal = {
 function PesqEmprestimos() {
   const [emprestimos, setEmprestimos] = useState<EmprestimoFinal[]>([])
   const [carregando, setCarregando] = useState(false)
-  const [msg, setMsg] = useState<string | null>(null)
 
   const fetchEmprestimos = async () => {
     setCarregando(true)
@@ -180,4 +180,5 @@ function PesqEmprestimos() {
   )
 }
 
-export default PesqEmprestimos
+// ✅ Protegendo a página com `withRoleProtection`
+export default withRoleProtection(PesqEmprestimos, ['funcionario', 'funcionario_administrador'])

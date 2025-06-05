@@ -1,8 +1,8 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { withRoleProtection } from '../components/withRoleProtection' 
+import { withRoleProtection } from '../components/withRoleProtection'
 
 function CadastroEmprestimos() {
   const router = useRouter()
@@ -11,10 +11,29 @@ function CadastroEmprestimos() {
     nome_pessoa: '',
   })
 
+  const [livrosDisponiveis, setLivrosDisponiveis] = useState<{ id: string; nome: string }[]>([])
   const [msg, setMsg] = useState<string | null>(null)
   const [dataDevolucaoFormatada, setDataDevolucaoFormatada] = useState<string | null>(null)
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  useEffect(() => {
+    async function fetchLivros() {
+      const { data, error } = await supabase
+        .from('livros')
+        .select('id, nome')
+        .gt('q_disponivel', 0)
+        .order('nome')
+
+      if (!error && data) {
+        setLivrosDisponiveis(data)
+      } else {
+        setMsg('Erro ao carregar os livros disponíveis')
+      }
+    }
+
+    fetchLivros()
+  }, [])
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
@@ -25,18 +44,25 @@ function CadastroEmprestimos() {
     e.preventDefault()
     setMsg(null)
 
-    const { data: livro, error: erroLivro } = await supabase
-      .from('livros')
-      .select('id, q_disponivel')
-      .ilike('nome', form.nome_livro)
-      .maybeSingle()
+    const livroSelecionado = livrosDisponiveis.find(l => String(l.id) === String(form.nome_livro))
 
-    if (erroLivro || !livro) {
-      setMsg('Livro não cadastrado')
+    if (!livroSelecionado) {
+      setMsg('Livro não encontrado')
       return
     }
 
-    if (livro.q_disponivel <= 0) {
+    const { data: livroDados, error: erroLivro } = await supabase
+      .from('livros')
+      .select('q_disponivel')
+      .eq('id', form.nome_livro)
+      .maybeSingle()
+
+    if (erroLivro || !livroDados) {
+      setMsg('Erro ao obter dados do livro')
+      return
+    }
+
+    if (livroDados.q_disponivel <= 0) {
       setMsg('Não há exemplares disponíveis')
       return
     }
@@ -74,7 +100,7 @@ function CadastroEmprestimos() {
     const { data: emprestimoExistente } = await supabase
       .from('emprestimos')
       .select('*')
-      .eq('nome_livro', livro.id)
+      .eq('nome_livro', form.nome_livro)
       .eq('solicitante_id', solicitante_id)
       .eq('tipo_solicitante', tipo_solicitante)
       .is('devolvido', null)
@@ -91,7 +117,7 @@ function CadastroEmprestimos() {
 
     const { error: erroInsercao } = await supabase.from('emprestimos').insert([
       {
-        nome_livro: livro.id,
+        nome_livro: form.nome_livro,
         solicitante_id,
         tipo_solicitante,
         data_devolucao: dataDevolucao.toISOString(),
@@ -105,8 +131,8 @@ function CadastroEmprestimos() {
 
     const { error: erroAtualizacao } = await supabase
       .from('livros')
-      .update({ q_disponivel: livro.q_disponivel - 1 })
-      .eq('id', livro.id)
+      .update({ q_disponivel: livroDados.q_disponivel - 1 })
+      .eq('id', form.nome_livro)
 
     if (erroAtualizacao) {
       setMsg('Erro ao atualizar quantidade de livros')
@@ -126,42 +152,58 @@ function CadastroEmprestimos() {
   }
 
   return (
-    <div>
-      <h1>Cadastro de Empréstimos</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="max-w-lg mx-auto p-6 bg-white rounded-md shadow-md">
+      <h1 className="text-2xl font-semibold text-center mb-6">Cadastro de Empréstimos</h1>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="nome_livro">Nome do Livro: </label>
-          <input
-            type="text"
+          <label htmlFor="nome_livro" className="block text-lg">Nome do Livro:</label>
+          <select
             name="nome_livro"
             value={form.nome_livro}
             onChange={handleChange}
             required
-          />
+            className="w-full p-2 border border-gray-300 rounded"
+          >
+            <option value="" disabled>Selecione um livro</option>
+            {livrosDisponiveis.map((livro) => (
+              <option key={livro.id} value={livro.id}>{livro.nome}</option>
+            ))}
+          </select>
         </div>
+
         <div>
-          <label htmlFor="nome_pessoa">Nome do Solicitante: </label>
+          <label htmlFor="nome_pessoa" className="block text-lg">Nome do Solicitante:</label>
           <input
             type="text"
             name="nome_pessoa"
             value={form.nome_pessoa}
             onChange={handleChange}
             required
+            className="w-full p-2 border border-gray-300 rounded"
           />
         </div>
-        <button type="submit">Cadastrar</button>
+
+        <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+          Cadastrar
+        </button>
       </form>
+
       <button
-        className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        onClick={() => router.push('/dashboard')}
+        className="mt-6 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+        onClick={() => router.push('/dashboard2')}
       >
         Voltar
       </button>
-      
 
-      {msg && <p>{msg}</p>}
+      {msg && (
+        <p className={`mt-4 ${msg.includes('sucesso') ? 'text-green-500' : 'text-red-500'}`}>
+          {msg}
+        </p>
+      )}
+
       {dataDevolucaoFormatada && (
-        <p>
+        <p className="mt-4">
           Data limite para devolução: <strong>{dataDevolucaoFormatada}</strong>
         </p>
       )}
@@ -169,4 +211,4 @@ function CadastroEmprestimos() {
   )
 }
 
-export default withRoleProtection(CadastroEmprestimos, ['aluno', 'funcionario'])
+export default withRoleProtection(CadastroEmprestimos, ['aluno', 'funcionario', 'funcionario_administrador'])

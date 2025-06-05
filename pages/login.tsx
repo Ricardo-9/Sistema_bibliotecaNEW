@@ -21,30 +21,47 @@ export default function Login() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
-      <input
-        type="email"
-        placeholder="Email"
-        className="p-2 border rounded mb-2 w-64"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Senha"
-        className="p-2 border rounded mb-2 w-64"
-        value={senha}
-        onChange={(e) => setSenha(e.target.value)}
-      />
-      {erro && <p className="text-red-500 mb-2">{erro}</p>}
-      <button
-        onClick={handleLogin}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Entrar
-      </button>
-      <a href='/forgot-password'>Esqueceu sua senha?Clique aqui</a>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-3xl font-semibold text-center text-gray-800 mb-6">Login</h1>
+
+        <div className="mb-4">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-600">Email</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="Digite seu email"
+            className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-6">
+          <label htmlFor="senha" className="block text-sm font-medium text-gray-600">Senha</label>
+          <input
+            type="password"
+            id="senha"
+            placeholder="Digite sua senha"
+            className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+          />
+        </div>
+
+        {erro && <p className="text-red-500 text-sm mb-4">{erro}</p>}
+
+        <button
+          onClick={handleLogin}
+          className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Entrar
+        </button>
+
+        <div className="mt-4 text-center">
+          <a href='/forgot-password' className="text-sm text-blue-500 hover:text-blue-700">Esqueceu sua senha? Clique aqui</a>
+        </div>
+      </div>
     </div>
   )
 }

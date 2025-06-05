@@ -178,4 +178,4 @@ function EditarFuncionario() {
 }
 
 // ✅ Protegido apenas para funcionários
-export default withRoleProtection(EditarFuncionario, ['funcionario'])
+export default withRoleProtection(EditarFuncionario, ['funcionario_administrador'])

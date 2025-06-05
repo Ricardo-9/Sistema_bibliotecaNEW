@@ -95,8 +95,13 @@ function PesqEditoras({ role }: Props) {
                 <td>{editora.email}</td>
                 <td>{editora.telefone}</td>
                 <td>
-                  <button onClick={() => deleteEditora(editora.id)}>Excluir</button>
+                  {role === 'funcionario_administrador' && (
+                  <td>
+                    <button onClick={() => deleteEditora(editora.id)}>Excluir</button>
                   <button onClick={() => router.push(`/updates/update_editoras/${editora.id}`)}>Editar</button>
+                  </td>
+                )}
+                  
                 </td>
               </tr>
             ))}
@@ -108,4 +113,4 @@ function PesqEditoras({ role }: Props) {
 }
 
 // ✅ Somente funcionários podem acessar essa página
-export default withRoleProtection(PesqEditoras, ['funcionario'])
+export default withRoleProtection(PesqEditoras, ['funcionario','funcionario_administrador'])

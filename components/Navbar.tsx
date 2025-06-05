@@ -33,8 +33,8 @@ const Navbar = () => {
             <li><button onClick={() => navegar('/c_livros')}>Cadastro de livros</button></li>
             <li><button onClick={() => navegar('/devolucao')}>Devolução</button></li>
             <li><button onClick={() => navegar('/main_pesquisa')}>Pesquisa</button></li>
-            <li><button onClick={() => navegar('/dash_boardpl')}>Dashboard</button></li>
             <li><button onClick={() => navegar('/perfil')}>Perfil do usuário</button></li>
+            <li><button onClick={() => navegar('/dashboard2')}>Dashboard</button></li>
           </ul>
         </div>
       )}

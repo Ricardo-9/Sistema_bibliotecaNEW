@@ -15,10 +15,11 @@ export default function SignupFuncionario() {
     senha: '',
     endereco: '',
     telefone: '',
+    role: 'funcionario', // <-- novo campo para o role, padrão "funcionario"
   })
   const [error, setError] = useState('')
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     const filteredValue = filterInput(name, value)
     setFormData({ ...formData, [name]: filteredValue })
@@ -33,6 +34,8 @@ export default function SignupFuncionario() {
         return value.replace(/\D/g, '').slice(0, 11)
       case 'telefone':
         return value.replace(/\D/g, '').slice(0, 15)
+      case 'role':
+        return value // role não precisa filtro especial
       default:
         return value
     }
@@ -42,18 +45,18 @@ export default function SignupFuncionario() {
     e.preventDefault()
     setError('')
 
-    const { nome, funcao, cpf, telefone, email, senha, endereco } = formData
+    const { nome, funcao, cpf, telefone, email, senha, endereco, role } = formData
 
     // Validações
     if (cpf.length !== 11) return setError('CPF deve ter exatamente 11 números.')
     if (telefone.length < 10) return setError('Telefone inválido.')
 
-    // Cadastro no Supabase Auth
+    // Cadastro no Supabase Auth com role dinâmico
     const { data: authUser, error: signUpError } = await supabase.auth.signUp({
       email,
       password: senha,
       options: {
-        data: { role: 'funcionario' },
+        data: { role },  // <- aqui o role vem do formulário
       },
     })
 
@@ -84,8 +87,20 @@ export default function SignupFuncionario() {
     <div className="max-w-xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Cadastro de Funcionário</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input name="nome" placeholder="Nome" required onChange={handleChange} value={formData.nome} />
-        <input name="funcao" placeholder="Função" required onChange={handleChange} value={formData.funcao} />
+        <input
+          name="nome"
+          placeholder="Nome"
+          required
+          onChange={handleChange}
+          value={formData.nome}
+        />
+        <input
+          name="funcao"
+          placeholder="Função"
+          required
+          onChange={handleChange}
+          value={formData.funcao}
+        />
         <Cleave
           name="cpf"
           placeholder="CPF"
@@ -135,6 +150,13 @@ export default function SignupFuncionario() {
           value={formData.telefone}
           onChange={handleChange}
         />
+
+        {/* NOVO CAMPO SELECT PARA ESCOLHER O ROLE */}
+        <select name="role" value={formData.role} onChange={handleChange} className="p-2 border rounded" >
+          <option value="funcionario">Funcionário</option>
+          <option value="funcionario_administrador">Funcionário Administrador</option>
+        </select>
+
         <button className="bg-orange-600 text-white px-4 py-2 rounded">Cadastrar</button>
         {error && <p className="text-red-500">{error}</p>}
       </form>

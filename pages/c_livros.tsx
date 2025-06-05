@@ -13,7 +13,8 @@ function CadastroLivros() {
     categoria: '',
     isbn: '',
     autor: '',
-    q_disponivel: ''
+    q_disponivel: '',
+    editora: ''
   })
 
   const [mensagem, setMensagem] = useState('')
@@ -66,6 +67,23 @@ function CadastroLivros() {
       return
     }
 
+    const { data: editoras, error: fetchEditoraError } = await supabase
+    .from('editoras')
+    .select('nome')
+    .eq('nome', form.editora)
+    .limit(1);
+
+    if (fetchEditoraError) {
+    setMensagem('Erro ao verificar editora: ' + fetchEditoraError.message);
+    return;
+    }
+
+    if (!editoras || editoras.length === 0) {
+    setMensagem('Editora não cadastrada');
+    return;
+    }
+
+
     const { error } = await supabase.from('livros').insert([form])
 
     if (error) {
@@ -78,7 +96,8 @@ function CadastroLivros() {
         categoria: '',
         isbn: '',
         autor: '',
-        q_disponivel: ''
+        q_disponivel: '',
+        editora: ''
       })
     }
   }
@@ -142,11 +161,16 @@ function CadastroLivros() {
           />
         </div>
 
+        <div>
+          <label>Editora</label>
+          <input name='editora' value={form.editora} onChange={handleChange} type='text' required></input>
+        </div>
+
         <button type="submit" className="border-2">Cadastrar</button>
       </form>
       <button
         className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        onClick={() => router.push('/dashboard')}
+        onClick={() => router.push('/dashboard2')}
       >
         Voltar
       </button>
@@ -157,4 +181,4 @@ function CadastroLivros() {
 }
 
 
-export default withRoleProtection(CadastroLivros, ['funcionario'])
+export default withRoleProtection(CadastroLivros, ['funcionario','funcionario_administrador'])
