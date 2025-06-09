@@ -8,7 +8,8 @@ export default function MainPesquisa() {
   return (
     <div>
       <div>
-        <h1>O que você quer pesquisar?</h1>
+      <div>
+            <h1>O que você quer pesquisar?</h1>
       </div>
       <div>
         <button onClick={() => router.push('/pesq_alunos')}>Alunos</button>
@@ -23,6 +24,8 @@ export default function MainPesquisa() {
       >
         Voltar
       </button>
+      </div>
+      
     </div>
   )
 }

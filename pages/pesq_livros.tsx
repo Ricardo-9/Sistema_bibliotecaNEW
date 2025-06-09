@@ -59,60 +59,83 @@ function PesLivros({ role }: Props) {
   }
 
   return (
-    <div>
-      <h1>Pesquisar Livros</h1>
+    <div className="min-h-screen bg-[#006400] flex items-center justify-center p-4">
+      <div className="w-full p-8 m-8 bg-[#2e8b57] rounded-lg shadow-md pt-[68px]">
+        <div className="mb-6 flex justify-between items-center">
+          <input
+            type="text"
+            value={filtroNome}
+            onChange={(e) => setFiltroNome(e.target.value)}
+            placeholder="Digite o nome do livro"
+            className="p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-16 w-3/5 text-white font-bold"
+          />
+          <button
+            onClick={handlePesquisar}
+            className="bg-[#006400] text-white font-bold rounded-full px-4 py-2 hover:bg-[#004d00]"
+          >
+            Pesquisar
+          </button>
+          <button
+            onClick={() => router.push('/c_livros')}
+            className="bg-[#006400] text-white font-bold rounded-full px-4 py-2 hover:bg-[#004d00]"
+          >
+            Cadastrar Livro
+          </button>
+        </div>
 
-      <div>
-        <input
-          type="text"
-          value={filtroNome}
-          onChange={(e) => setFiltroNome(e.target.value)}
-          placeholder="Digite o nome do livro"
-        />
-        <button onClick={handlePesquisar}>Pesquisar</button>
-        <button onClick={() => router.push('/c_livros')}>Cadastrar livro</button>
-      </div>
-
-      {carregando ? (
-        <p>Carregando...</p>
-      ) : livros.length === 0 ? (
-        <p>Nenhum livro encontrado.</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Ano de Publicação</th>
-              <th>Categoria</th>
-              <th>Autor</th>
-              <th>Quantidade Disponível</th>
-              <th>ISBN</th>
-              {role === 'funcionario' && <th>Ações</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {livros.map((livro) => (
-              <tr key={livro.id}>
-                <td>{livro.nome}</td>
-                <td>{livro.ano_publicacao}</td>
-                <td>{livro.categoria}</td>
-                <td>{livro.autor}</td>
-                <td>{livro.q_disponivel}</td>
-                <td>{livro.isbn}</td>
-                {role === 'funcionario_administrador' && (
-                  <td>
-                    <button onClick={() => deleteLivro(livro.id)}>Excluir</button>
-                    <button onClick={() => router.push(`/updates/update_livros/${livro.id}`)}>Editar</button>
-                  </td>
-                )}
+        {carregando ? (
+          <p className="text-white font-bold">Carregando...</p>
+        ) : livros.length === 0 ? (
+          <p className="text-white font-bold">Nenhum livro encontrado.</p>
+        ) : (
+          <table className="w-full table-auto">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-white">Nome</th>
+                <th className="px-4 py-2 text-white">Ano de Publicação</th>
+                <th className="px-4 py-2 text-white">Categoria</th>
+                <th className="px-4 py-2 text-white">Autor</th>
+                <th className="px-4 py-2 text-white">Qtd. Disponível</th>
+                <th className="px-4 py-2 text-white">ISBN</th>
+                {role === 'funcionario_administrador' && <th className="px-4 py-2 text-white">Ações</th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {livros.map((livro) => (
+                <tr key={livro.id} className="bg-[#2e8b57] text-white">
+                  <td className="border border-[#006400] px-4 py-2">{livro.nome}</td>
+                  <td className="border border-[#006400] px-4 py-2">{livro.ano_publicacao}</td>
+                  <td className="border border-[#006400] px-4 py-2">{livro.categoria}</td>
+                  <td className="border border-[#006400] px-4 py-2">{livro.autor}</td>
+                  <td className="border border-[#006400] px-4 py-2">{livro.q_disponivel}</td>
+                  <td className="border border-[#006400] px-4 py-2">{livro.isbn}</td>
+                  {role === 'funcionario_administrador' && (
+                    <td className="border border-[#006400] px-4 py-2 text-center">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => deleteLivro(livro.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-3 py-1"
+                        >
+                          Excluir
+                        </button>
+                        <button
+                          onClick={() => router.push(`/updates/update_livros/${livro.id}`)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-3 py-1"
+                        >
+                          Editar
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   )
 }
 
-// Acesso permitido para alunos e funcionários, mas ações visíveis só para funcionários
-export default withRoleProtection(PesLivros, ['aluno', 'funcionario','funcionario_administrador'])
+// Acesso permitido para alunos e funcionários
+export default withRoleProtection(PesLivros, ['aluno', 'funcionario', 'funcionario_administrador'])
