@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import Perfil from './imagens/Perfil_icon.png'
-
+//import Perfil from './imgs/Bc.png'//
+//<Image src={Perfil} alt='Perfil-icon' width={400} className="rounded-lg"/>//
 export default function Login() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -29,7 +29,7 @@ export default function Login() {
           <button onClick={() => router.push('/')} className='bg-[#006400] text-white font-bold rounded-full absolute top-16 left-16 px-4 py-2 hover:bg-[#004d00]'>Voltar</button>
         </div>
           <div className='flex items-center justify-center'>
-            <Image src={Perfil} alt='Perfil-icon' width={400} className="rounded-lg"/>
+            
           </div>
         <div className="mb-4">
           <input
@@ -72,4 +72,4 @@ export default function Login() {
       </div>
     </div>
   )
-}
+}//

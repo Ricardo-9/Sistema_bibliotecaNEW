@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection'
+import Image from 'next/image'
+import brasao from './imgs/Bc.png.png'
 
 type PerfilUsuario = {
   nome: string
@@ -87,60 +89,74 @@ function Perfil() {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Meu Perfil</h1>
+    <div className="min-h-screen bg-[#006400] flex items-center justify-center px-4 py-10">
+      <Image
+              src={brasao}
+              alt="Logo do Ceará"
+              width={600}
+              height={600}
+              className="pointer-events-none absolute top-10 left-0 z-0 w-32 sm:w-48 md:w-72 lg:w-[580px] h-auto opacity-10"
+            />
+      <div className="w-full max-w-3xl bg-[#2e8b57] text-white rounded-[30px] shadow-2xl px-[25px] py-12 space-y-6">
+        <h1 className="text-4xl font-bold text-center mb-6 drop-shadow">Meu Perfil</h1>
 
-      {erro && <p className="text-red-500">{erro}</p>}
+        {erro && (
+          <p className="text-red-300 font-semibold text-center">{erro}</p>
+        )}
 
-      {perfil ? (
-        <div className="space-y-2">
-          <p><strong>Nome:</strong> {perfil.nome}</p>
-          <p><strong>Email:</strong> {perfil.email}</p>
-          <p><strong>CPF:</strong> {perfil.cpf}</p>
-          <p><strong>Endereço:</strong> {perfil.endereco}</p>
-          <p><strong>Telefone:</strong> {perfil.telefone}</p>
+        {perfil ? (
+          <div className="space-y-4 text-lg sm:text-xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+              <p><strong>Nome:</strong> {perfil.nome}</p>
+              <p><strong>Email:</strong> {perfil.email}</p>
+              <p><strong>CPF:</strong> {perfil.cpf}</p>
+              <p><strong>Endereço:</strong> {perfil.endereco}</p>
+              <p><strong>Telefone:</strong> {perfil.telefone}</p>
 
-          {perfil.tipo === 'aluno' && (
-            <>
-              <p><strong>Matrícula:</strong> {perfil.matricula}</p>
-              <p><strong>Série:</strong> {perfil.serie}</p>
-              <p><strong>Curso:</strong> {perfil.curso}</p>
-            </>
-          )}
+              {perfil.tipo === 'aluno' && (
+                <>
+                  <p><strong>Matrícula:</strong> {perfil.matricula}</p>
+                  <p><strong>Série:</strong> {perfil.serie}</p>
+                  <p><strong>Curso:</strong> {perfil.curso}</p>
+                </>
+              )}
 
-          {perfil.tipo === 'funcionario' && (
-            <p><strong>Função:</strong> {perfil.funcao}</p>
-          )}
+              {perfil.tipo === 'funcionario' && (
+                <p><strong>Função:</strong> {perfil.funcao}</p>
+              )}
 
-          <p><strong>Tipo de Usuário:</strong> {perfil.tipo}</p>
+              <p><strong>Tipo de Usuário:</strong> {perfil.tipo}</p>
+            </div>
 
-          {/* Botões de ação */}
-          <div className="flex flex-col gap-2 mt-6">
-            <button
-              onClick={() => router.push('/editar-perfil')}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-            >
-              Editar Perfil
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+              <button
+                onClick={() => router.push('/editar-perfil')}
+                className="w-full sm:w-1/2 bg-[#004d00] hover:bg-[#003f00] text-white font-semibold py-3 rounded-[50px] transition duration-300 shadow-md"
+              >
+                Editar Perfil
+              </button>
 
-            <button
-              onClick={() => router.push('/forgot-password')}
-              className="text-sm text-blue-600 underline"
-            >
-              Redefinir senha
-            </button>
+              <button
+                onClick={() => router.push('/forgot-password')}
+                className="w-full sm:w-1/2 border-2 border-white text-white hover:bg-white hover:text-[#006400] font-semibold py-3 rounded-[50px] transition duration-300 shadow-md"
+              >
+                Redefinir Senha
+              </button>
+            </div>
 
             <button
               onClick={handleLogout}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-[50px] mt-4 transition duration-300 shadow-md"
             >
-              Sair da conta
+              Sair da Conta
             </button>
           </div>
-        </div>
-      ) : (
-        !erro && <p>Carregando perfil...</p>
-      )}
+        ) : (
+          !erro && (
+            <p className="text-center text-white">Carregando perfil...</p>
+          )
+        )}
+      </div>
     </div>
   )
 }

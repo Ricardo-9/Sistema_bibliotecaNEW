@@ -8,7 +8,9 @@ export default function Home() {
   const router = useRouter()
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] overflow-hidden">
+    
+  <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] overflow-hidden">
+  
   <Image
     src={brasao}
     alt="Logo do Ceará"
@@ -25,7 +27,7 @@ export default function Home() {
       {step === 'initial' && (
         <>
           <button
-            className="bg-[#006400] text-white rounded-[50px] text-3xl font-bold px-10 sm:px-20 md:px-[100px] lg:px-[229px] py-[35px] transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#006400] shadow-md hover:bg-[#004d00]"
+            className="bg-[#006400] text-white rounded-[50px] text-3xl font-bold px-10 sm:px-20 md:px-[100px] lg:px-[235px] py-[35px] transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#006400] shadow-md hover:bg-[#004d00]"
             onClick={() => router.push('/login')}
           >
             Login
