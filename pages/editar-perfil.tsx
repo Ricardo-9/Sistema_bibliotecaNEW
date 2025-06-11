@@ -160,7 +160,16 @@ function EditarPerfil() {
               Salvar alterações
             </button>
           </form>
+  
         )}
+        <br></br>
+        <button
+              type="button"
+              onClick={() => router.push('/perfil')}
+              className="w-full bg-transparent border border-white py-2 rounded-[20px] hover:bg-white hover:text-[#006400] transition duration-300"
+            >
+              Voltar
+            </button>
       </div>
     </div>
   )

@@ -207,12 +207,15 @@ function CadastroEmprestimos() {
           </button>
         </form>
 
+        
+        <br></br>
         <button
-          className="mt-6 w-full px-4 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition shadow-md"
-          onClick={() => router.push('/dashboard2')}
-        >
-          Voltar
-        </button>
+              type="button"
+              onClick={() => router.push('/dashboard')}
+              className="w-full bg-transparent border border-white py-2 rounded-[20px] hover:bg-white hover:text-[#006400] transition duration-300"
+            >
+              Voltar
+            </button>
 
         {dataDevolucaoFormatada && (
           <p className="mt-4 text-center text-white font-medium">

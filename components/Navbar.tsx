@@ -63,7 +63,7 @@ const Navbar = () => {
               <button onClick={() => navegar('/devolucao')} className="text-left hover:text-[#d4f7dc]">Devolução</button>
               <button onClick={() => navegar('/main_pesquisa')} className="text-left hover:text-[#d4f7dc]">Pesquisa</button>
               <button onClick={() => navegar('/perfil')} className="text-left hover:text-[#d4f7dc]">Perfil do usuário</button>
-              <button onClick={() => navegar('/dashboard2')} className="text-left hover:text-[#d4f7dc]">Dashboard</button>
+              <button onClick={() => navegar('/dashboard')} className="text-left hover:text-[#d4f7dc]">Dashboard</button>
             </nav>
 
             
