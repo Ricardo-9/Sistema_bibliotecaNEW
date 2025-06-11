@@ -1,8 +1,11 @@
 'use client'
+
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection'
+import Image from 'next/image'
+import brasao from './imgs/Bc.png.png' // Ajuste o caminho se necessário
 
 function CadastroEmprestimos() {
   const router = useRouter()
@@ -13,6 +16,7 @@ function CadastroEmprestimos() {
 
   const [livrosDisponiveis, setLivrosDisponiveis] = useState<{ id: string; nome: string }[]>([])
   const [msg, setMsg] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [dataDevolucaoFormatada, setDataDevolucaoFormatada] = useState<string | null>(null)
 
   useEffect(() => {
@@ -26,10 +30,9 @@ function CadastroEmprestimos() {
       if (!error && data) {
         setLivrosDisponiveis(data)
       } else {
-        setMsg('Erro ao carregar os livros disponíveis')
+        setError('Erro ao carregar os livros disponíveis')
       }
     }
-
     fetchLivros()
   }, [])
 
@@ -38,16 +41,18 @@ function CadastroEmprestimos() {
       ...form,
       [e.target.name]: e.target.value,
     })
+    setMsg(null)
+    setError(null)
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setMsg(null)
+    setError(null)
 
     const livroSelecionado = livrosDisponiveis.find(l => String(l.id) === String(form.nome_livro))
-
     if (!livroSelecionado) {
-      setMsg('Livro não encontrado')
+      setError('Livro não encontrado')
       return
     }
 
@@ -58,12 +63,12 @@ function CadastroEmprestimos() {
       .maybeSingle()
 
     if (erroLivro || !livroDados) {
-      setMsg('Erro ao obter dados do livro')
+      setError('Erro ao obter dados do livro')
       return
     }
 
     if (livroDados.q_disponivel <= 0) {
-      setMsg('Não há exemplares disponíveis')
+      setError('Não há exemplares disponíveis')
       return
     }
 
@@ -93,7 +98,7 @@ function CadastroEmprestimos() {
     }
 
     if (!solicitante_id || !tipo_solicitante) {
-      setMsg('Pessoa não encontrada (aluno ou funcionário)')
+      setError('Pessoa não encontrada (aluno ou funcionário)')
       return
     }
 
@@ -107,7 +112,7 @@ function CadastroEmprestimos() {
       .maybeSingle()
 
     if (emprestimoExistente) {
-      setMsg('Este usuário já possui este livro emprestado.')
+      setError('Este usuário já possui este livro emprestado.')
       return
     }
 
@@ -125,7 +130,7 @@ function CadastroEmprestimos() {
     ])
 
     if (erroInsercao) {
-      setMsg('Erro ao registrar empréstimo')
+      setError('Erro ao registrar empréstimo')
       return
     }
 
@@ -135,7 +140,7 @@ function CadastroEmprestimos() {
       .eq('id', form.nome_livro)
 
     if (erroAtualizacao) {
-      setMsg('Erro ao atualizar quantidade de livros')
+      setError('Erro ao atualizar quantidade de livros')
       return
     }
 
@@ -152,61 +157,69 @@ function CadastroEmprestimos() {
   }
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white rounded-md shadow-md">
-      <h1 className="text-2xl font-semibold text-center mb-6">Cadastro de Empréstimos</h1>
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
+      <Image
+        src={brasao}
+        alt="Brasão"
+        width={600}
+        height={600}
+        className="pointer-events-none absolute top-10 left-0 z-0 w-32 sm:w-48 md:w-72 lg:w-[580px] h-auto opacity-10"
+      />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="nome_livro" className="block text-lg">Nome do Livro:</label>
+      <div className="relative z-10 bg-[#2e8b57] rounded-3xl p-8 sm:p-12 max-w-xl w-full shadow-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8">Cadastro de Empréstimos</h1>
+
+        {error && <p className="text-red-400 text-center mb-4">{error}</p>}
+        {msg && <p className="text-green-400 text-center mb-4">{msg}</p>}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           <select
             name="nome_livro"
+            id="nome_livro"
             value={form.nome_livro}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
           >
             <option value="" disabled>Selecione um livro</option>
             {livrosDisponiveis.map((livro) => (
               <option key={livro.id} value={livro.id}>{livro.nome}</option>
             ))}
           </select>
-        </div>
 
-        <div>
-          <label htmlFor="nome_pessoa" className="block text-lg">Nome do Solicitante:</label>
           <input
             type="text"
             name="nome_pessoa"
+            id="nome_pessoa"
             value={form.nome_pessoa}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded"
+            placeholder="Digite o nome do aluno ou funcionário"
+            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+            autoComplete="off"
           />
-        </div>
 
-        <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-          Cadastrar
+          <button
+            type="submit"
+            className="w-full bg-[#006400] text-white font-bold py-4 rounded-full hover:bg-[#004d00] transition-transform transform hover:scale-105 shadow-lg"
+          >
+            Cadastrar
+          </button>
+        </form>
+
+        <button
+          className="mt-6 w-full px-4 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition shadow-md"
+          onClick={() => router.push('/dashboard2')}
+        >
+          Voltar
         </button>
-      </form>
 
-      <button
-        className="mt-6 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
-        onClick={() => router.push('/dashboard2')}
-      >
-        Voltar
-      </button>
-
-      {msg && (
-        <p className={`mt-4 ${msg.includes('sucesso') ? 'text-green-500' : 'text-red-500'}`}>
-          {msg}
-        </p>
-      )}
-
-      {dataDevolucaoFormatada && (
-        <p className="mt-4">
-          Data limite para devolução: <strong>{dataDevolucaoFormatada}</strong>
-        </p>
-      )}
+        {dataDevolucaoFormatada && (
+          <p className="mt-4 text-center text-white font-medium">
+            Data limite para devolução: <strong>{dataDevolucaoFormatada}</strong>
+          </p>
+        )}
+      </div>
     </div>
   )
 }
