@@ -1,31 +1,74 @@
 'use client'
+import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabaseClient'
+import Loading from '../components/Loading'
 
-import { useRouter } from 'next/navigation'
-import { withRoleProtection } from '../components/withRoleProtection'
+export default function Dashboard() {
+  const [loading, setLoading] = useState(true)
+  const [erro, setErro] = useState<string | null>(null)
 
-function TelaInicial() {
-  const router = useRouter()
+  const [totalLivros, setTotalLivros] = useState(0)
+  const [totalAlunos, setTotalAlunos] = useState(0)
+  const [totalFuncionarios, setTotalFuncionarios] = useState(0)
+  const [totalUsuarios, setTotalUsuarios] = useState(0)
+  const [totalEditoras, setTotalEditoras] = useState(0)
 
-  function navegar(rota: string) {
-    router.push(rota)
-  }
+  useEffect(() => {
+    async function fetchDadosDashboard() {
+      setLoading(true)
+      setErro(null)
+
+      try {
+        const [
+          livrosResponse,
+          alunosResponse,
+          funcionariosResponse,
+          editorasResponse,
+        ] = await Promise.all([
+          supabase.from('livros').select('id', { head: true, count: 'exact' }),
+          supabase.from('alunos').select('id', { head: true, count: 'exact' }),
+          supabase.from('funcionarios').select('id', { head: true, count: 'exact' }),
+          supabase.from('editoras').select('id', { head: true, count: 'exact' }),
+        ])
+
+        if (livrosResponse.error) throw new Error('Erro ao carregar livros: ' + livrosResponse.error.message)
+        if (alunosResponse.error) throw new Error('Erro ao carregar alunos: ' + alunosResponse.error.message)
+        if (funcionariosResponse.error) throw new Error('Erro ao carregar funcionários: ' + funcionariosResponse.error.message)
+        if (editorasResponse.error) throw new Error('Erro ao carregar editoras: ' + editorasResponse.error.message)
+
+        const totalLivrosCount = livrosResponse.count ?? 0
+        const totalAlunosCount = alunosResponse.count ?? 0
+        const totalFuncionariosCount = funcionariosResponse.count ?? 0
+        const totalEditorasCount = editorasResponse.count ?? 0
+
+        setTotalLivros(totalLivrosCount)
+        setTotalAlunos(totalAlunosCount)
+        setTotalFuncionarios(totalFuncionariosCount)
+        setTotalEditoras(totalEditorasCount)
+        setTotalUsuarios(totalAlunosCount + totalFuncionariosCount)
+      } catch (error: any) {
+        setErro(error.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDadosDashboard()
+  }, [])
+
+  if (loading) return <Loading/>
+  if (erro) return <p>{erro}</p>
 
   return (
-    <main style={{ padding: '2rem' }}>
-      <h1>Tela Inicial</h1>
-      <p>Escolha uma opção:</p>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-        <button onClick={() => navegar('/devolucao')}>Devolução</button>
-        <button onClick={() => navegar('/c_livros')}>Cadastro de Livros</button>
-        <button onClick={() => navegar('/c_emprestimos')}>Cadastro de Empréstimos</button>
-        <button onClick={() => navegar('/c_editoras')}>Cadastro de Editoras</button>
-        <button onClick={() => navegar('/main_pesquisa')}>Pesquisa</button>
-      </div>
-       
-    </main>
+    <div>
+      <h1>Dashboard do Sistema</h1>
+      <ul>
+        <li>Total de livros: {totalLivros}</li>
+        <li>Total de usuários: {totalUsuarios}</li>
+        <li>Total de alunos: {totalAlunos}</li>
+        <li>Total de funcionários: {totalFuncionarios}</li>
+        <li>Total de editoras: {totalEditoras}</li>
+      </ul>
+    </div>
   )
 }
-
-
-export default withRoleProtection(TelaInicial, ['aluno','funcionario', 'funcionario_administrador'])
