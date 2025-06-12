@@ -1,7 +1,11 @@
+'use client'
+
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
 
 export default function ForgotPassword() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -16,8 +20,8 @@ export default function ForgotPassword() {
       return
     }
 
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/reset-password', // página para onde o usuário será levado após clicar no link no e-mail
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password',
     })
 
     if (error) {
@@ -27,24 +31,48 @@ export default function ForgotPassword() {
     }
   }
 
+  const handleBack = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+
+    if (session) {
+      router.push('/dashboard')
+    } else {
+      router.push('/login')
+    }
+  }
+
   return (
-    <div className="max-w-md mx-auto p-4 mt-20">
-      <h1 className="text-2xl font-bold mb-4">Esqueceu sua senha?</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          type="email"
-          placeholder="Digite seu e-mail"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          className="border border-gray-400 rounded px-3 py-2"
-        />
-        <button type="submit" className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
-          Enviar link de recuperação
+    <div className="min-h-screen flex items-center justify-center bg-[#006400] px-4 py-10">
+      <div className="bg-[#2e8b57] text-white rounded-[30px] shadow-lg p-8 max-w-md w-full space-y-6">
+        <h1 className="text-3xl font-bold text-center drop-shadow-sm">Esqueceu sua senha?</h1>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Digite seu e-mail"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            className="w-full px-4 py-3 rounded-[20px] text-black border-none focus:outline-none focus:ring-2 focus:ring-white"
+          />
+          <button
+            type="submit"
+            className="w-full bg-white text-[#006400] font-semibold py-3 rounded-[50px] hover:bg-gray-200 transition duration-300"
+          >
+            Enviar link de recuperação
+          </button>
+        </form>
+
+        {message && <p className="text-green-300 text-center">{message}</p>}
+        {error && <p className="text-red-300 text-center">{error}</p>}
+
+        <button
+          onClick={handleBack}
+          className="w-full bg-transparent border border-white py-2 rounded-[20px] hover:bg-white hover:text-[#006400] transition duration-300"
+        >
+          Voltar
         </button>
-      </form>
-      {message && <p className="mt-4 text-green-600">{message}</p>}
-      {error && <p className="mt-4 text-red-600">{error}</p>}
+      </div>
     </div>
   )
 }

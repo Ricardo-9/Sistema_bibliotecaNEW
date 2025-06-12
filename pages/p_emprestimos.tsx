@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 
 type EmprestimoBruto = {
   id: string
-  nome_livro: number
+  nome_livro: string
   solicitante_id: string
   tipo_solicitante: 'aluno' | 'funcionario'
   data_emprestimo: string
@@ -29,7 +29,7 @@ function PesqEmprestimos() {
 
   const fetchEmprestimos = async () => {
     setCarregando(true)
-    
+
     const { data: emprestimosBrutos, error } = await supabase
       .from('emprestimos')
       .select('*')
@@ -88,38 +88,42 @@ function PesqEmprestimos() {
   }, [])
 
   return (
-    <div>
-      <h1>Lista de Empréstimos</h1>
-      {carregando ? (
-        <p>Carregando...</p>
-      ) : emprestimos.length === 0 ? (
-        <p>Nenhum empréstimo encontrado.</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Livro</th>
-              <th>Solicitante</th>
-              <th>Tipo</th>
-              <th>Data Empréstimo</th>
-              <th>Data Devolução</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {emprestimos.map((e) => (
-              <tr key={e.id}>
-                <td>{e.nome_livro}</td>
-                <td>{e.nome_solicitante}</td>
-                <td>{e.tipo_solicitante}</td>
-                <td>{e.data_emprestimo}</td>
-                <td>{e.data_devolucao}</td>
-                <td>{e.devolvido ? 'Devolvido' : 'Pendente'}</td>
+    <div className="min-h-screen bg-[#006400] flex items-center justify-center p-4">
+      <div className="w-full p-8 m-8 bg-[#2e8b57] rounded-lg shadow-md pt-[68px]">
+        <h1 className="text-white text-2xl font-bold mb-6 text-center">Lista de Empréstimos</h1>
+        {carregando ? (
+          <p className="text-white text-center font-bold">Carregando...</p>
+        ) : emprestimos.length === 0 ? (
+          <p className="text-white text-center font-bold">Nenhum empréstimo encontrado.</p>
+        ) : (
+          <table className="w-full table-auto">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-white">Livro</th>
+                <th className="px-4 py-2 text-white">Solicitante</th>
+                <th className="px-4 py-2 text-white">Tipo</th>
+                <th className="px-4 py-2 text-white">Data Empréstimo</th>
+                <th className="px-4 py-2 text-white">Data Devolução</th>
+                <th className="px-4 py-2 text-white">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {emprestimos.map((e) => (
+                <tr key={e.id} className="bg-[#2e8b57] text-white">
+                  <td className="border border-[#006400] px-4 py-2">{e.nome_livro}</td>
+                  <td className="border border-[#006400] px-4 py-2">{e.nome_solicitante}</td>
+                  <td className="border border-[#006400] px-4 py-2 capitalize">{e.tipo_solicitante}</td>
+                  <td className="border border-[#006400] px-4 py-2">{e.data_emprestimo}</td>
+                  <td className="border border-[#006400] px-4 py-2">{e.data_devolucao}</td>
+                  <td className="border border-[#006400] px-4 py-2 font-semibold">
+                    {e.devolvido ? 'Devolvido' : 'Pendente'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   )
 }

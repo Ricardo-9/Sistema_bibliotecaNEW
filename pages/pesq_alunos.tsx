@@ -61,59 +61,82 @@ function PesqAlunos({ role }: Props) {
   }
 
   return (
-    <div>
-      <h1>Pesquisar alunos</h1>
+    <div className="min-h-screen bg-[#006400] flex items-center justify-center p-4">
+      <div className="w-full p-8 m-8 bg-[#2e8b57] rounded-lg shadow-md pt-[68px]">
+        <div className="mb-6 flex justify-between items-center">
+          <input
+            type="text"
+            value={filtroNome}
+            onChange={(e) => setFiltroNome(e.target.value)}
+            placeholder="Digite o nome do aluno"
+            className="p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-16 w-3/5 text-white font-bold"
+          />
+          <button
+            onClick={handlePesquisar}
+            className="bg-[#006400] text-white font-bold rounded-full px-4 py-2 hover:bg-[#004d00]"
+          >
+            Pesquisar
+          </button>
+          <button
+            onClick={() => router.push('/signup-aluno')}
+            className="bg-[#006400] text-white font-bold rounded-full px-4 py-2 hover:bg-[#004d00]"
+          >
+            Cadastrar Aluno
+          </button>
+        </div>
 
-      <div>
-        <input
-          type="text"
-          value={filtroNome}
-          onChange={(e) => setFiltroNome(e.target.value)}
-          placeholder="Digite o nome do aluno"
-        />
-        <button onClick={handlePesquisar}>Pesquisar</button>
-        <button onClick={() => router.push('/signup-aluno')}>Cadastrar Aluno</button>
-      </div>
-
-      {carregando ? (
-        <p>Carregando...</p>
-      ) : alunos.length === 0 ? (
-        <p>Nenhum aluno encontrado.</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>CPF</th>
-              <th>Matricula</th>
-              <th>Endereço</th>
-              <th>Email</th>
-              <th>Telefone</th>
-              <th>Série</th>
-              <th>Curso</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {alunos.map((aluno) => (
-              <tr key={aluno.id}>
-                <td>{aluno.nome}</td>
-                <td>{aluno.cpf}</td>
-                <td>{aluno.matricula}</td>
-                <td>{aluno.endereco}</td>
-                <td>{aluno.email}</td>
-                <td>{aluno.telefone}</td>
-                <td>{aluno.serie}</td>
-                <td>{aluno.curso}</td>
-                <td>
-                  <button onClick={() => deleteAluno(aluno.id)}>Excluir</button>
-                  <button onClick={() => router.push(`/updates/update_alunos/${aluno.id}`)}>Editar</button>
-                </td>
+        {carregando ? (
+          <p>Carregando...</p>
+        ) : alunos.length === 0 ? (
+          <p>Nenhum aluno encontrado.</p>
+        ) : (
+          <table className="w-full table-auto">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-white">Nome</th>
+                <th className="px-4 py-2 text-white">CPF</th>
+                <th className="px-4 py-2 text-white">Matricula</th>
+                <th className="px-4 py-2 text-white">Endereço</th>
+                <th className="px-4 py-2 text-white">Email</th>
+                <th className="px-4 py-2 text-white">Telefone</th>
+                <th className="px-4 py-2 text-white">Série</th>
+                <th className="px-4 py-2 text-white">Curso</th>
+                <th className="px-4 py-2 text-white">Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {alunos.map((aluno) => (
+                <tr key={aluno.id} className="bg-[#2e8b57] text-white">
+                  <td className="border border-[#006400] px-4 py-2">{aluno.nome}</td>
+                  <td className="border border-[#006400] px-4 py-2">{aluno.cpf}</td>
+                  <td className="border border-[#006400] px-4 py-2">{aluno.matricula}</td>
+                  <td className="border border-[#006400] px-4 py-2">{aluno.endereco}</td>
+                  <td className="border border-[#006400] px-4 py-2">{aluno.email}</td>
+                  <td className="border border-[#006400] px-4 py-2">{aluno.telefone}</td>
+                  <td className="border border-[#006400] px-4 py-2">{aluno.serie}</td>
+                  <td className="border border-[#006400] px-4 py-2">{aluno.curso}</td>
+                  <td className="border border-[#006400] px-4 py-2 text-center">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => deleteAluno(aluno.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-3 py-1"
+                      >
+                        Excluir
+                      </button>
+                      <button
+                        onClick={() => router.push(`/updates/update_alunos/${aluno.id}`)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-3 py-1"
+                      >
+                        Editar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   )
 }

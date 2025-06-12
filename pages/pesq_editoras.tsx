@@ -60,57 +60,77 @@ function PesqEditoras({ role }: Props) {
   }
 
   return (
-    <div>
-      <h1>Pesquisar Editoras</h1>
+    <div className="min-h-screen bg-[#006400] flex items-center justify-center p-4">
+      <div className="w-full p-8 m-8 bg-[#2e8b57] rounded-lg shadow-md pt-[68px]">
+        <div className="mb-6 flex justify-between items-center">
+          <input
+            type="text"
+            value={filtroNome}
+            onChange={(e) => setFiltroNome(e.target.value)}
+            placeholder="Digite o nome da editora"
+            className="p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-16 w-3/5 text-white font-bold"
+          />
+          <button
+            onClick={handlePesquisar}
+            className="bg-[#006400] text-white font-bold rounded-full px-4 py-2 hover:bg-[#004d00]"
+          >
+            Pesquisar
+          </button>
+          <button
+            onClick={() => router.push('/c_editoras')}
+            className="bg-[#006400] text-white font-bold rounded-full px-4 py-2 hover:bg-[#004d00]"
+          >
+            Cadastrar Editora
+          </button>
+        </div>
 
-      <div>
-        <input
-          type="text"
-          value={filtroNome}
-          onChange={(e) => setFiltroNome(e.target.value)}
-          placeholder="Digite o nome da editora"
-        />
-        <button onClick={handlePesquisar}>Pesquisar</button>
-        <button onClick={() => router.push('/c_editoras')}>Cadastrar editora</button>
-      </div>
-
-      {carregando ? (
-        <p>Carregando...</p>
-      ) : editoras.length === 0 ? (
-        <p>Nenhuma editora encontrada.</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Email</th>
-              <th>Telefone</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {editoras.map((editora) => (
-              <tr key={editora.id}>
-                <td>{editora.nome.trim()}</td>
-                <td>{editora.email}</td>
-                <td>{editora.telefone}</td>
-                <td>
-                  {role === 'funcionario_administrador' && (
-                  <td>
-                    <button onClick={() => deleteEditora(editora.id)}>Excluir</button>
-                  <button onClick={() => router.push(`/updates/update_editoras/${editora.id}`)}>Editar</button>
-                  </td>
-                )}
-                  
-                </td>
+        {carregando ? (
+          <p className="text-white font-bold">Carregando...</p>
+        ) : editoras.length === 0 ? (
+          <p className="text-white font-bold">Nenhuma editora encontrada.</p>
+        ) : (
+          <table className="w-full table-auto">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-white">Nome</th>
+                <th className="px-4 py-2 text-white">Email</th>
+                <th className="px-4 py-2 text-white">Telefone</th>
+                <th className="px-4 py-2 text-white">Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {editoras.map((editora) => (
+                <tr key={editora.id} className="bg-[#2e8b57] text-white">
+                  <td className="border border-[#006400] px-4 py-2">{editora.nome.trim()}</td>
+                  <td className="border border-[#006400] px-4 py-2">{editora.email}</td>
+                  <td className="border border-[#006400] px-4 py-2">{editora.telefone}</td>
+                  <td className="border border-[#006400] px-4 py-2 text-center">
+                    {role === 'funcionario_administrador' && (
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => deleteEditora(editora.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-3 py-1"
+                        >
+                          Excluir
+                        </button>
+                        <button
+                          onClick={() => router.push(`/updates/update_editoras/${editora.id}`)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-3 py-1"
+                        >
+                          Editar
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   )
 }
 
 // ✅ Somente funcionários podem acessar essa página
-export default withRoleProtection(PesqEditoras, ['funcionario','funcionario_administrador'])
+export default withRoleProtection(PesqEditoras, ['funcionario', 'funcionario_administrador'])

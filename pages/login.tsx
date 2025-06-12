@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-//import Perfil from './imgs/Bc.png'//
-//<Image src={Perfil} alt='Perfil-icon' width={400} className="rounded-lg"/>//
+import Perfil from './imgs/img1.png'
+
 export default function Login() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
