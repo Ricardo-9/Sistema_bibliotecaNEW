@@ -18,6 +18,7 @@ const Navbar = () => {
     '/unauthorized',
     '/reset-password',
     '/forgot-password',
+    '/painel_aluno',
   ]
 
   useEffect(() => {

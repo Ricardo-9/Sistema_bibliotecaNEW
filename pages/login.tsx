@@ -11,15 +11,45 @@ export default function Login() {
   const router = useRouter()
 
   const handleLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({
+    setErro('')
+
+    const { data: loginData, error } = await supabase.auth.signInWithPassword({
       email,
       password: senha,
     })
-    if (error) {
-      setErro(error.message)
-    } else {
-      router.push('/dashboard')
+
+    if (error || !loginData?.user) {
+      setErro(error?.message || 'Erro ao fazer login')
+      return
     }
+
+    const userEmail = loginData.user.email
+
+    // Verifica se é aluno
+    const { data: aluno } = await supabase
+      .from('alunos')
+      .select('id')
+      .ilike('email', userEmail!)
+      .maybeSingle()
+
+    if (aluno) {
+      router.push('/painel_aluno')
+      return
+    }
+
+    // Verifica se é funcionário
+    const { data: funcionario } = await supabase
+      .from('funcionarios')
+      .select('id')
+      .ilike('email', userEmail!)
+      .maybeSingle()
+
+    if (funcionario) {
+      router.push('/dashboard')
+      return
+    }
+
+    setErro('Usuário não encontrado como aluno ou funcionário')
   }
 
   return (
@@ -28,9 +58,9 @@ export default function Login() {
         <div>
           <button onClick={() => router.push('/')} className='bg-[#006400] text-white font-bold rounded-full absolute top-16 left-16 px-4 py-2 hover:bg-[#004d00]'>Voltar</button>
         </div>
-          <div className='flex items-center justify-center'>
-            
-          </div>
+        <div className='flex items-center justify-center'>
+          <Image src={Perfil} alt='Img'/>
+        </div>
         <div className="mb-4">
           <input
             type="email"
@@ -54,17 +84,15 @@ export default function Login() {
         </div>
 
         {erro && <p className="text-red-500 text-sm mb-4">{erro}</p>}
+
         <div className='flex justify-center mt-16'>
           <button
-          onClick={handleLogin}
-          className="px-12 py-3 bg-[#006400] text-white rounded-full h-14 font-bold text-lg hover:bg-[#004d00]"
-        >
-          Login
-        </button>
+            onClick={handleLogin}
+            className="px-12 py-3 bg-[#006400] text-white rounded-full h-14 font-bold text-lg hover:bg-[#004d00]"
+          >
+            Login
+          </button>
         </div>
-        
-
-
 
         <div className="mt-4 text-center">
           <a href='/forgot-password' className="text-sm text-white hover:text-white">Esqueceu sua senha? Clique aqui</a>
@@ -72,4 +100,4 @@ export default function Login() {
       </div>
     </div>
   )
-}//
+}
