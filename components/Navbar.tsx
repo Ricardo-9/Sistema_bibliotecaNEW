@@ -2,24 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { Menu, X, BookOpen, User, LogOut ,Landmark ,Book ,ArrowUpDown, ChartNoAxesCombined} from 'lucide-react'
+import {
+  Menu, X, BookOpen, User, LogOut, Landmark, Book, ArrowUpDown,
+  ChartNoAxesCombined, UserRoundSearch, MailSearch, CalendarSearch, FileSearch
+} from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 const rotasSemNavbar = [
-  '/',
-  '/login',
-  '/signup',
-  '/signup-aluno',
-  '/signup-funcionario',
-  '/unauthorized',
-  '/reset-password',
-  '/forgot-password',
-  '/painel_aluno',
+  '/', '/login', '/signup', '/signup-aluno', '/signup-funcionario',
+  '/unauthorized', '/reset-password', '/forgot-password', '/painel_aluno',
 ]
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [mostrarNavbar, setMostrarNavbar] = useState(true)
+  const [role, setRole] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -28,18 +25,25 @@ export default function Navbar() {
         setMostrarNavbar(false)
         return
       }
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         setMostrarNavbar(false)
         return
       }
+
+      const userRole = user.user_metadata?.role
+      setRole(userRole || null)
+
       const { data: aluno } = await supabase
         .from('alunos')
         .select('id')
         .eq('user_id', user.id)
         .maybeSingle()
+
       setMostrarNavbar(!aluno)
     }
+
     checarUsuario()
   }, [router.pathname])
 
@@ -89,94 +93,55 @@ export default function Navbar() {
             </div>
 
             <nav className="flex flex-col space-y-4 text-lg font-semibold">
-              <button
-                onClick={() => navegar('/c_editoras')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <Landmark size={20} />
-                Cadastro de editora
+              <button onClick={() => navegar('/c_editoras')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                <Landmark size={20} /> Cadastro de editora
               </button>
-              <button
-                onClick={() => navegar('/c_emprestimos')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <BookOpen size={20} />
-                Cadastro de empréstimo
+              <button onClick={() => navegar('/c_emprestimos')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                <BookOpen size={20} /> Cadastro de empréstimo
               </button>
-              <button
-                onClick={() => navegar('/c_livros')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <Book size={20} />
-                Cadastro de livros
+              <button onClick={() => navegar('/c_livros')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                <Book size={20} /> Cadastro de livros
               </button>
-              <button
-                onClick={() => navegar('/devolucao')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <ArrowUpDown size={20} />
-                Tela de devolução
+              <button onClick={() => navegar('/devolucao')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                <ArrowUpDown size={20} /> Tela de devolução
               </button>
-              <button
-                onClick={() => navegar('/perfil')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <User size={20} />
-                Perfil do usuário
+              <button onClick={() => navegar('/perfil')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                <User size={20} /> Perfil do usuário
               </button>
-              <button
-                onClick={() => navegar('/dashboard')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <ChartNoAxesCombined size={20} />
-                Painel Geral
+              <button onClick={() => navegar('/dashboard')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                <ChartNoAxesCombined size={20} /> Painel Geral
               </button>
-              <button
-                onClick={() => navegar('/pesq_editoras')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <ChartNoAxesCombined size={20} />
-                Pesquisa de editoras
+              <button onClick={() => navegar('/pesq_editoras')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                <MailSearch size={20} /> Pesquisa de editoras
               </button>
-              <button
-                onClick={() => navegar('/p_emprestimos')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <ChartNoAxesCombined size={20} />
-                Pesquisa de empréstimo
+              <button onClick={() => navegar('/p_emprestimos')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                <CalendarSearch size={20} /> Pesquisa de empréstimo
               </button>
-              <button
-                onClick={() => navegar('/pesq_livros')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <ChartNoAxesCombined size={20} />
-                Pesquisa de livro
-              </button>
-              <button
-                onClick={() => navegar('/pesq_alunos')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <ChartNoAxesCombined size={20} />
-                Pesquisa de aluno
-              </button>
-              <button
-                onClick={() => navegar('/pesq_funcionario')}
-                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
-              >
-                <ChartNoAxesCombined size={20} />
-                Pesquisa de funcionário
+              <button onClick={() => navegar('/pesq_livros')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                <FileSearch size={20} /> Pesquisa de livro
               </button>
 
+              {/* Botões restritos ao administrador */}
+              {role === 'funcionario_administrador' && (
+                <>
+                  <button onClick={() => navegar('/pesq_alunos')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                    <UserRoundSearch size={20} /> Pesquisa de aluno
+                  </button>
+                  <button onClick={() => navegar('/pesq_funcionario')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                    <UserRoundSearch size={20} /> Pesquisa de funcionário
+                  </button>
+                </>
+              )}
             </nav>
 
             <div className="mt-auto pt-6 border-t border-white/30">
               <button
-            onClick={() => router.push('/')}
-            className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[#006400] text-white font-semibold rounded-full hover:bg-[#006400] hover:text-white transition-all duration-300 shadow"
-          >
-            <LogOut className="w-5 h-5" />
-            Sair
-          </button>
+                onClick={logout}
+                className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[#006400] text-white font-semibold rounded-full hover:bg-[#006400] hover:text-white transition-all duration-300 shadow"
+              >
+                <LogOut className="w-5 h-5" />
+                Sair
+              </button>
             </div>
           </nav>
         </div>
