@@ -4,9 +4,10 @@ import { withRoleProtection } from '../../../components/withRoleProtection'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabaseClient'
-import Cleave from 'cleave.js/react'
 import Image from 'next/image'
 import brasao from '../../imgs/Bc.png.png'
+import { ArrowLeft, UserCog } from 'lucide-react'
+import Cleave from 'cleave.js/react'
 
 function EditarAluno() {
   const { id } = useParams()
@@ -69,7 +70,6 @@ function EditarAluno() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     setErro('')
     setMensagem('')
 
@@ -149,7 +149,6 @@ function EditarAluno() {
       .eq('id', id)
 
     if (error) {
-      console.error(error)
       setErro('Erro ao atualizar.')
     } else {
       setMensagem('Aluno atualizado com sucesso!')
@@ -159,58 +158,69 @@ function EditarAluno() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-      <Image
-        src={brasao}
-        alt="Logo do Ceará"
-        width={600}
-        height={600}
-        className="pointer-events-none absolute top-10 left-0 z-0 w-32 sm:w-48 md:w-72 lg:w-[580px] h-auto opacity-10"
-      />
+     
 
-      <div className="relative z-10 bg-[#2e8b57] rounded-3xl p-8 sm:p-12 max-w-2xl w-full shadow-2xl">
-        <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8">Editar Aluno</h1>
+      {/* Botão voltar */}
+      <button
+        onClick={() => router.push('/pesq_alunos')}
+        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
 
-        {erro && <p className="text-red-300 text-center mb-4">{erro}</p>}
-        {mensagem && <p className="text-green-300 text-center mb-4">{mensagem}</p>}
+      <div className="relative z-10 bg-[#2e8b57] rounded-[30px] p-8 sm:p-12 max-w-xl w-full shadow-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8 flex items-center justify-center gap-3 drop-shadow">
+          <UserCog className="w-8 h-8" /> Editar Aluno
+        </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input className="w-full p-3 rounded-lg border-none shadow-inner focus:outline-none" name="nome" placeholder="Nome" required onChange={handleChange} value={formData.nome} />
+        {erro && <p className="text-red-400 text-center mb-4">{erro}</p>}
+        {mensagem && <p className="text-green-400 text-center mb-4">{mensagem}</p>}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {[
+            { name: 'nome', placeholder: 'Nome' },
+            { name: 'matricula', placeholder: 'Matrícula (7 dígitos)' },
+            { name: 'endereco', placeholder: 'Endereço' },
+            { name: 'email', placeholder: 'Email', type: 'email' },
+            { name: 'serie', placeholder: 'Série' },
+            { name: 'curso', placeholder: 'Curso' }
+          ].map(({ name, placeholder, type }) => (
+            <input
+              key={name}
+              name={name}
+              type={type || 'text'}
+              placeholder={placeholder}
+              value={(formData as any)[name]}
+              onChange={handleChange}
+              className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+            />
+          ))}
+
           <Cleave
-            className="w-full p-3 rounded-lg border-none shadow-inner focus:outline-none"
             name="cpf"
             placeholder="CPF"
-            required
             value={formData.cpf}
             onChange={handleChange}
+            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             options={{ blocks: [3, 3, 3, 2], delimiters: ['.', '.', '-'], numericOnly: true }}
           />
-          <input className="w-full p-3 rounded-lg border-none shadow-inner focus:outline-none" name="matricula" placeholder="Matrícula (7 dígitos)" required onChange={handleChange} value={formData.matricula} />
-          <input className="w-full p-3 rounded-lg border-none shadow-inner focus:outline-none" name="endereco" placeholder="Endereço" required onChange={handleChange} value={formData.endereco} />
-          <input className="w-full p-3 rounded-lg border-none shadow-inner focus:outline-none" type="email" name="email" placeholder="Email" required onChange={handleChange} value={formData.email} />
+
           <Cleave
-            className="w-full p-3 rounded-lg border-none shadow-inner focus:outline-none"
             name="telefone"
             placeholder="Telefone"
-            required
             value={formData.telefone}
             onChange={handleChange}
+            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             options={{ blocks: [0, 2, 5, 4], delimiters: ['(', ') ', '-', ''], numericOnly: true }}
           />
-          <input className="w-full p-3 rounded-lg border-none shadow-inner focus:outline-none" name="serie" placeholder="Série" required onChange={handleChange} value={formData.serie} />
-          <input className="w-full p-3 rounded-lg border-none shadow-inner focus:outline-none" name="curso" placeholder="Curso" required onChange={handleChange} value={formData.curso} />
 
-          <button type="submit" className="w-full bg-[#006400] text-white font-bold py-3 rounded-full hover:bg-[#004d00] transition-transform transform hover:scale-105 shadow-lg">
+          <button
+            type="submit"
+            className="w-full bg-white text-[#006400] font-bold py-4 rounded-full hover:bg-emerald-100 transition shadow-lg"
+          >
             Salvar alterações
           </button>
         </form>
-        <br></br>
-        <button
-              type="button"
-              onClick={() => router.push('/pesq_alunos')}
-              className="w-full bg-transparent border border-white py-2 rounded-[20px] hover:bg-white hover:text-[#006400] transition duration-300"
-            >
-              Voltar
-            </button>
       </div>
     </div>
   )

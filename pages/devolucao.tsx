@@ -1,8 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection'
+import {
+  Search,
+  ArrowLeft,
+  Book,
+  User,
+  CheckCircle,
+  XCircle
+} from 'lucide-react'
 
 type EmprestimoBruto = {
   id: string
@@ -25,15 +34,36 @@ type EmprestimoFinal = {
 }
 
 function PesqEmprestimos() {
+  const router = useRouter()
   const [emprestimos, setEmprestimos] = useState<EmprestimoFinal[]>([])
+  const [filtroNome, setFiltroNome] = useState('')
   const [carregando, setCarregando] = useState(false)
 
-  const fetchEmprestimos = async () => {
+  const fetchEmprestimos = async (filtro?: string) => {
     setCarregando(true)
-    const { data: emprestimosBrutos, error } = await supabase
+    let query = supabase
       .from('emprestimos')
       .select('*')
       .order('data_emprestimo', { ascending: false })
+
+    if (filtro && filtro.trim() !== '') {
+      // Filtra por nome do livro, buscar ids do livro cujo nome combine com filtro
+      const { data: livrosFiltrados } = await supabase
+        .from('livros')
+        .select('id')
+        .ilike('nome', `%${filtro}%`)
+      const livrosIds = livrosFiltrados?.map(l => l.id) || []
+      if (livrosIds.length > 0) {
+        query = query.in('nome_livro', livrosIds)
+      } else {
+        // Se não achar livros, já limpa resultados
+        setEmprestimos([])
+        setCarregando(false)
+        return
+      }
+    }
+
+    const { data: emprestimosBrutos, error } = await query
 
     if (error || !emprestimosBrutos) {
       console.error(error)
@@ -88,6 +118,8 @@ function PesqEmprestimos() {
   }, [])
 
   const devolverLivro = async (emprestimoId: string) => {
+    if (!confirm('Confirma a devolução desse livro?')) return
+
     try {
       const { data: emprestimo, error: erroEmprestimo } = await supabase
         .from('emprestimos')
@@ -132,7 +164,7 @@ function PesqEmprestimos() {
       }
 
       alert('Livro devolvido com sucesso!')
-      fetchEmprestimos()
+      fetchEmprestimos(filtroNome)
     } catch (error) {
       console.error(error)
       alert('Erro inesperado ao devolver livro')
@@ -140,49 +172,99 @@ function PesqEmprestimos() {
   }
 
   return (
-    <div className="min-h-screen bg-[#006400] flex items-center justify-center p-4">
-      <div className="w-full p-8 m-8 bg-[#2e8b57] rounded-lg shadow-md pt-[68px]">
+    <div className="min-h-screen bg-[#006400] flex flex-col items-center justify-start px-4 py-10 relative">
+      <button
+        onClick={() => router.push('/painel_funcionario')}
+        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+        aria-label="Voltar"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
+
+      <div className="w-full max-w-6xl bg-[#2e8b57] rounded-[30px] p-8 shadow-2xl z-10 text-white">
+        <h1 className="text-4xl font-bold text-center mb-8 flex items-center justify-center gap-2 drop-shadow">
+          <Book className="w-8 h-8" /> Pesquisa de Empréstimos
+        </h1>
+
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+          <input
+            type="text"
+            value={filtroNome}
+            onChange={(e) => setFiltroNome(e.target.value)}
+            placeholder="Filtrar por nome do livro..."
+            className="w-full md:w-2/3 px-6 py-3 rounded-full bg-[#006400] text-white font-medium placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white shadow-md"
+          />
+          <button
+            onClick={() => fetchEmprestimos(filtroNome)}
+            className="flex items-center gap-2 bg-white text-[#006400] font-semibold px-5 py-2 rounded-full hover:bg-emerald-100 transition shadow"
+          >
+            <Search className="w-5 h-5" /> Pesquisar
+          </button>
+        </div>
 
         {carregando ? (
-          <p className="text-white text-center">Carregando...</p>
+          <p className="text-center text-lg font-semibold">Carregando...</p>
         ) : emprestimos.length === 0 ? (
-          <p className="text-white text-center">Nenhum empréstimo encontrado.</p>
+          <p className="text-center text-lg font-semibold">Nenhum empréstimo encontrado.</p>
         ) : (
-          <table className="w-full table-auto">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 text-white">Livro</th>
-                <th className="px-4 py-2 text-white">Solicitante</th>
-                <th className="px-4 py-2 text-white">Tipo</th>
-                <th className="px-4 py-2 text-white">Data Empréstimo</th>
-                <th className="px-4 py-2 text-white">Data Devolução</th>
-                <th className="px-4 py-2 text-white">Status</th>
-                <th className="px-4 py-2 text-white">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {emprestimos.map((e) => (
-                <tr key={e.id} className="bg-[#2e8b57] text-white">
-                  <td className="border border-[#006400] px-4 py-2">{e.nome_livro}</td>
-                  <td className="border border-[#006400] px-4 py-2">{e.nome_solicitante}</td>
-                  <td className="border border-[#006400] px-4 py-2">{e.tipo_solicitante}</td>
-                  <td className="border border-[#006400] px-4 py-2">{e.data_emprestimo}</td>
-                  <td className="border border-[#006400] px-4 py-2">{e.data_devolucao}</td>
-                  <td className="border border-[#006400] px-4 py-2">
-                    {e.devolvido ? 'Devolvido' : 'Pendente'}
-                  </td>
-                  <td className="border border-[#006400] px-4 py-2 text-center">
-                    <button
-                      onClick={() => devolverLivro(e.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-4 py-2"
-                    >
-                      Devolver
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#1f6f43] text-white text-sm sm:text-base">
+                  <th className="px-4 py-3">Livro</th>
+                  <th className="px-4 py-3">Solicitante</th>
+                  <th className="px-4 py-3">Tipo</th>
+                  <th className="px-4 py-3">Data Empréstimo</th>
+                  <th className="px-4 py-3">Data Devolução</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-center">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {emprestimos.map((e) => (
+                  <tr
+                    key={e.id}
+                    className="odd:bg-[#2e8b57] even:bg-[#237e4d] text-white"
+                  >
+                    <td className="px-4 py-3 border border-[#006400]">{e.nome_livro}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{e.nome_solicitante}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{e.tipo_solicitante}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{e.data_emprestimo}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{e.data_devolucao}</td>
+                    <td className="px-4 py-3 border border-[#006400]">
+                      {e.devolvido ? (
+                        <span className="flex items-center gap-1 text-green-300 font-semibold">
+                          <CheckCircle className="w-5 h-5" /> Devolvido
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-yellow-300 font-semibold">
+                          <XCircle className="w-5 h-5" /> Pendente
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 border border-[#006400] text-center">
+                      {!e.devolvido && (
+                        <button
+                          onClick={() => devolverLivro(e.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-4 py-2 shadow"
+                        >
+                          Devolver
+                        </button>
+                      )}
+                      {e.devolvido && (
+                        <button
+                          disabled
+                          className="bg-gray-600 cursor-not-allowed text-white font-bold rounded-full px-4 py-2 opacity-60"
+                        >
+                          Devolvido
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

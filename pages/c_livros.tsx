@@ -5,12 +5,13 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import Cleave from 'cleave.js/react'
 import Image from 'next/image'
-import { BookOpenText, ArrowLeft } from 'lucide-react'
+import { Book, ArrowLeft } from 'lucide-react'
 import brasao from './imgs/Bc.png.png'
 import { withRoleProtection } from '../components/withRoleProtection'
 
 function CadastroLivros() {
   const router = useRouter()
+
   const [form, setForm] = useState({
     nome: '',
     ano_publicacao: '',
@@ -21,30 +22,28 @@ function CadastroLivros() {
     editora: ''
   })
 
-  const [mensagem, setMensagem] = useState('')
+  const [msg, setMsg] = useState('')
   const [error, setError] = useState('')
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    })
-    setMensagem('')
+    const { name, value } = e.target
+    setForm(prev => ({ ...prev, [name]: value }))
     setError('')
+    setMsg('')
   }
 
   function handleIsbnChange(e: any) {
-    setForm({ ...form, isbn: e.target.value })
-    setMensagem('')
+    setForm(prev => ({ ...prev, isbn: e.target.value }))
     setError('')
+    setMsg('')
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-
-    setMensagem('')
     setError('')
+    setMsg('')
 
+    // Verifica ISBN duplicado
     const { data: livrosExistentes, error: fetchError } = await supabase
       .from('livros')
       .select('isbn')
@@ -60,12 +59,14 @@ function CadastroLivros() {
       return
     }
 
+    // Validação ISBN (13 dígitos)
     const isbnLimpo = form.isbn.replace(/[^0-9]/g, '')
     if (isbnLimpo.length !== 13) {
       setError('O campo ISBN deve estar completamente preenchido.')
       return
     }
 
+    // Validação ano de publicação
     const ano = parseInt(form.ano_publicacao, 10)
     const anoAtual = new Date().getFullYear()
     if (isNaN(ano) || ano < 1000 || ano > anoAtual) {
@@ -73,16 +74,18 @@ function CadastroLivros() {
       return
     }
 
+    // Validação quantidade disponível
     const quantidade = parseInt(form.q_disponivel, 10)
     if (isNaN(quantidade) || quantidade < 0) {
       setError('Quantidade deve ser um número inteiro não negativo.')
       return
     }
 
+    // Verifica se editora existe
     const { data: editoras, error: fetchEditoraError } = await supabase
       .from('editoras')
       .select('nome')
-      .eq('nome', form.editora)
+      .eq('nome', form.editora.trim())
       .limit(1)
 
     if (fetchEditoraError) {
@@ -91,16 +94,27 @@ function CadastroLivros() {
     }
 
     if (!editoras || editoras.length === 0) {
-      setError('Editora não cadastrada')
+      setError('Editora não cadastrada.')
       return
     }
 
-    const { error } = await supabase.from('livros').insert([form])
+    // Insere livro
+    const { error } = await supabase.from('livros').insert([
+      {
+        nome: form.nome.trim(),
+        ano_publicacao: form.ano_publicacao.trim(),
+        categoria: form.categoria.trim(),
+        isbn: form.isbn.trim(),
+        autor: form.autor.trim(),
+        q_disponivel: quantidade,
+        editora: form.editora.trim()
+      }
+    ])
 
     if (error) {
       setError('Erro ao cadastrar livro: ' + error.message)
     } else {
-      setMensagem('Livro cadastrado com sucesso!')
+      setMsg('Livro cadastrado com sucesso!')
       setForm({
         nome: '',
         ano_publicacao: '',
@@ -110,36 +124,35 @@ function CadastroLivros() {
         q_disponivel: '',
         editora: ''
       })
+      // Redireciona após 1.5s, se quiser
+      // setTimeout(() => router.push('/dashboard'), 1500)
     }
   }
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-      <Image
-        src={brasao}
-        alt="Brasão"
-        width={600}
-        height={600}
-        className="pointer-events-none absolute top-10 left-0 z-0 w-32 sm:w-48 md:w-72 lg:w-[580px] h-auto opacity-10"
-      />
+      
 
-      {/* Botão voltar */}
-      <button
-        onClick={() => router.push('/dashboard')}
-        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
-      >
-        <ArrowLeft className="w-6 h-6" />
-      </button>
+      {/* Botões de topo */}
+      <div className="absolute top-4 right-4 flex gap-4 z-20">
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+          aria-label="Voltar"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+      </div>
 
       <div className="relative z-10 bg-[#2e8b57] rounded-[30px] p-8 sm:p-12 max-w-xl w-full shadow-2xl">
         <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8 flex items-center justify-center gap-3 drop-shadow">
-          <BookOpenText className="w-8 h-8" /> Cadastro de Livros
+          <Book className="w-8 h-8" /> Cadastro de Livros
         </h1>
 
         {error && <p className="text-red-400 text-center mb-4">{error}</p>}
-        {mensagem && <p className="text-green-400 text-center mb-4">{mensagem}</p>}
+        {msg && <p className="text-green-400 text-center mb-4">{msg}</p>}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <input
             className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             type="text"

@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection'
-import Image from 'next/image'
-import brasao from './imgs/Bc.png.png'
+import { ArrowLeft, BookOpen } from 'lucide-react'
 
 type Emprestimo = {
   id: number
@@ -31,7 +30,6 @@ function MeusEmprestimos() {
         return
       }
 
-      // Buscar o ID e tipo do solicitante
       const { data: aluno } = await supabase
         .from('alunos')
         .select('id')
@@ -53,6 +51,7 @@ function MeusEmprestimos() {
           tipo = 'funcionario'
         } else {
           setErro('Usuário não encontrado.')
+          setLoading(false)
           return
         }
       }
@@ -75,53 +74,48 @@ function MeusEmprestimos() {
     }
 
     carregarEmprestimos()
-  }, [])
+  }, [router])
 
   return (
-    <div className="min-h-screen bg-[#006400] flex items-center justify-center px-4 py-10 relative">
-      <Image
-        src={brasao}
-        alt="Brasão"
-        width={600}
-        height={600}
-        className="pointer-events-none absolute top-10 left-0 z-0 w-32 sm:w-48 md:w-72 lg:w-[580px] h-auto opacity-10"
-      />
+    <div className="min-h-screen bg-[#006400] flex flex-col items-center justify-start px-4 py-10 relative">
+      {/* Botão voltar */}
+      <button
+        onClick={() => router.push('/painel_aluno')}
+        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
 
-      <div className="relative z-10 w-full max-w-4xl bg-[#2e8b57] text-white rounded-[30px] shadow-2xl px-8 py-12 space-y-8">
-        <h1 className="text-4xl font-bold text-center drop-shadow">Meus Empréstimos</h1>
+      {/* Container principal */}
+      <div className="w-full max-w-6xl bg-[#2e8b57] rounded-[30px] p-8 shadow-2xl z-10 text-white">
+        <h1 className="text-4xl font-bold text-center mb-8 flex items-center justify-center gap-2 drop-shadow">
+          <BookOpen className="w-8 h-8" /> Meus Empréstimos
+        </h1>
 
         {loading ? (
-          <p className="text-center">Carregando empréstimos...</p>
+          <p className="text-center text-lg font-semibold">Carregando...</p>
         ) : erro ? (
-          <p className="text-center text-red-400">{erro}</p>
+          <p className="text-center text-red-400 font-semibold">{erro}</p>
         ) : emprestimos.length === 0 ? (
-          <p className="text-center text-white text-lg">Você não possui empréstimos ativos.</p>
+          <p className="text-center text-lg font-semibold">Você não possui empréstimos ativos.</p>
         ) : (
-          <div className="space-y-6">
+          <div className="grid gap-6">
             {emprestimos.map((emp) => (
               <div
                 key={emp.id}
-                className="bg-[#004d00] rounded-2xl p-5 shadow-md flex flex-col sm:flex-row sm:justify-between sm:items-center"
+                className="bg-[#004d00] rounded-2xl p-6 shadow-md text-white flex flex-col gap-2"
               >
-                <div>
-                  <p><strong>Livro:</strong> {emp.livros?.nome || 'Nome não encontrado'}</p>
-                  <p><strong>Data para Devolução:</strong> {new Date(emp.data_devolucao).toLocaleDateString('pt-BR')}</p>
-                </div>
+                <p className="text-lg font-semibold">
+                  <strong>Livro:</strong> {emp.livros?.nome || 'Nome não encontrado'}
+                </p>
+                <p className="text-lg font-semibold">
+                  <strong>Data para Devolução:</strong>{' '}
+                  {new Date(emp.data_devolucao).toLocaleDateString('pt-BR')}
+                </p>
               </div>
             ))}
           </div>
         )}
-
-        <div className="mt-10 flex justify-center">
-          <br />
-        <button
-          type="button"
-          onClick={() => router.push('/dashboard')}
-          className="w-full bg-white text-black border border-white py-2 rounded-[20px] hover:bg-white hover:text-[#006400] transition duration-300"
-        >
-          Voltar
-        </button>
-        </div>
       </div>
     </div>
   )

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection'
 import Image from 'next/image'
-import { Book, ArrowLeft } from 'lucide-react'
+import { BookOpen, ArrowLeft } from 'lucide-react'
 import brasao from './imgs/Bc.png.png'
 import Select from 'react-select'
 
@@ -161,13 +161,7 @@ function CadastroEmprestimos() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-      <Image
-        src={brasao}
-        alt="Brasão"
-        width={600}
-        height={600}
-        className="pointer-events-none absolute top-10 left-0 z-0 w-32 sm:w-48 md:w-72 lg:w-[580px] h-auto opacity-10"
-      />
+      
 
       {/* Botão voltar */}
       <button
@@ -179,7 +173,7 @@ function CadastroEmprestimos() {
 
       <div className="relative z-10 bg-[#2e8b57] rounded-[30px] p-8 sm:p-12 max-w-xl w-full shadow-2xl">
         <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8 flex items-center justify-center gap-3 drop-shadow">
-          <Book className="w-8 h-8" /> Cadastro de Empréstimos
+          <BookOpen className="w-8 h-8" /> Cadastro de Empréstimos
         </h1>
 
         {error && <p className="text-red-400 text-center mb-4">{error}</p>}

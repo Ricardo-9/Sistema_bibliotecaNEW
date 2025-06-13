@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection'
+import {
+  Search,
+  PlusCircle,
+  Trash2,
+  Pencil,
+  UserCheck,
+  ArrowLeft
+} from 'lucide-react'
 
 type Funcionarios = {
   id: string
@@ -49,7 +57,8 @@ function PesqFuncionarios({ role }: Props) {
     fetchFuncionarios()
   }, [])
 
-  const deleteFuncionarios = async (id: string) => {
+  const deleteFuncionario = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este funcionário?')) return
     await supabase.from('funcionarios').delete().eq('id', id)
     fetchFuncionarios(filtroNome)
   }
@@ -59,81 +68,101 @@ function PesqFuncionarios({ role }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#006400] flex items-center justify-center p-4">
-      <div className="w-full p-8 m-8 bg-[#2e8b57] rounded-lg shadow-md pt-[68px]">
-        <div className="mb-6 flex justify-between items-center">
+    <div className="min-h-screen bg-[#006400] flex flex-col items-center justify-start px-4 py-10 relative">
+      <button
+        onClick={() => router.push('/dashboard-funcionario')}
+        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+        aria-label="Voltar"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
+
+      <div className="w-full max-w-6xl bg-[#2e8b57] rounded-[30px] p-8 shadow-2xl z-10 text-white">
+        <h1 className="text-4xl font-bold text-center mb-8 flex items-center justify-center gap-2 drop-shadow">
+          <UserCheck className="w-8 h-8" /> Pesquisa de Funcionários
+        </h1>
+
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
           <input
             type="text"
             value={filtroNome}
             onChange={(e) => setFiltroNome(e.target.value)}
-            placeholder="Digite o nome do funcionário"
-            className="p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-16 w-3/5 text-white font-bold"
+            placeholder="Digite o nome do funcionário..."
+            className="w-full md:w-2/3 px-6 py-3 rounded-full bg-[#006400] text-white font-medium placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white shadow-md"
           />
-          <button
-            onClick={handlePesquisar}
-            className="bg-[#006400] text-white font-bold rounded-full px-4 py-2 hover:bg-[#004d00]"
-          >
-            Pesquisar
-          </button>
-          <button
-            onClick={() => router.push('/signup-funcionario')}
-            className="bg-[#006400] text-white font-bold rounded-full px-4 py-2 hover:bg-[#004d00]"
-          >
-            Cadastrar Funcionário
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <button
+              onClick={handlePesquisar}
+              className="flex items-center gap-2 bg-white text-[#006400] font-semibold px-5 py-2 rounded-full hover:bg-emerald-100 transition shadow"
+            >
+              <Search className="w-5 h-5" /> Pesquisar
+            </button>
+            <button
+              onClick={() => router.push('/signup-funcionario')}
+              className="flex items-center gap-2 bg-white text-[#006400] font-semibold px-5 py-2 rounded-full hover:bg-emerald-100 transition shadow"
+            >
+              <PlusCircle className="w-5 h-5" /> Cadastrar Funcionário
+            </button>
+          </div>
         </div>
 
         {carregando ? (
-          <p className="text-white font-bold">Carregando...</p>
+          <p className="text-center text-lg font-semibold">Carregando...</p>
         ) : funcionarios.length === 0 ? (
-          <p className="text-white font-bold">Nenhum funcionário encontrado.</p>
+          <p className="text-center text-lg font-semibold">Nenhum funcionário encontrado.</p>
         ) : (
-          <table className="w-full table-auto">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 text-white">Nome</th>
-                <th className="px-4 py-2 text-white">CPF</th>
-                <th className="px-4 py-2 text-white">Função</th>
-                <th className="px-4 py-2 text-white">Endereço</th>
-                <th className="px-4 py-2 text-white">Email</th>
-                <th className="px-4 py-2 text-white">Telefone</th>
-                <th className="px-4 py-2 text-white">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {funcionarios.map((funcionario) => (
-                <tr key={funcionario.id} className="bg-[#2e8b57] text-white">
-                  <td className="border border-[#006400] px-4 py-2">{funcionario.nome}</td>
-                  <td className="border border-[#006400] px-4 py-2">{funcionario.cpf}</td>
-                  <td className="border border-[#006400] px-4 py-2">{funcionario.funcao}</td>
-                  <td className="border border-[#006400] px-4 py-2">{funcionario.endereco}</td>
-                  <td className="border border-[#006400] px-4 py-2">{funcionario.email}</td>
-                  <td className="border border-[#006400] px-4 py-2">{funcionario.telefone}</td>
-                  <td className="border border-[#006400] px-4 py-2 text-center">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => deleteFuncionarios(funcionario.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-3 py-1"
-                      >
-                        Excluir
-                      </button>
-                      <button
-                        onClick={() => router.push(`/updates/update_funcionarios/${funcionario.id}`)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-3 py-1"
-                      >
-                        Editar
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#1f6f43] text-white text-sm sm:text-base">
+                  <th className="px-4 py-3">Nome</th>
+                  <th className="px-4 py-3">CPF</th>
+                  <th className="px-4 py-3">Função</th>
+                  <th className="px-4 py-3">Endereço</th>
+                  <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Telefone</th>
+                  <th className="px-4 py-3 text-center">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {funcionarios.map((funcionario) => (
+                  <tr
+                    key={funcionario.id}
+                    className="odd:bg-[#2e8b57] even:bg-[#237e4d] text-white"
+                  >
+                    <td className="px-4 py-3 border border-[#006400]">{funcionario.nome}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{funcionario.cpf}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{funcionario.funcao}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{funcionario.endereco}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{funcionario.email}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{funcionario.telefone}</td>
+                    <td className="px-4 py-3 border border-[#006400] text-center">
+                      <div className="flex justify-center gap-3">
+                        <button
+                          onClick={() => deleteFuncionario(funcionario.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-3 py-1 shadow-sm"
+                          aria-label={`Excluir funcionário ${funcionario.nome}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => router.push(`/updates/update_funcionarios/${funcionario.id}`)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-3 py-1 shadow-sm"
+                          aria-label={`Editar funcionário ${funcionario.nome}`}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
   )
 }
 
-// ✅ Acesso restrito apenas a funcionários
 export default withRoleProtection(PesqFuncionarios, ['funcionario_administrador'])

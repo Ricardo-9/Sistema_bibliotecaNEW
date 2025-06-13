@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
+import { ArrowLeft, BookOpen, UserCheck } from 'lucide-react'
 
 type EmprestimoBruto = {
   id: string
@@ -24,6 +26,7 @@ type EmprestimoFinal = {
 }
 
 function PesqEmprestimos() {
+  const router = useRouter()
   const [emprestimos, setEmprestimos] = useState<EmprestimoFinal[]>([])
   const [carregando, setCarregando] = useState(false)
 
@@ -88,40 +91,61 @@ function PesqEmprestimos() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#006400] flex items-center justify-center p-4">
-      <div className="w-full p-8 m-8 bg-[#2e8b57] rounded-lg shadow-md pt-[68px]">
-        <h1 className="text-white text-2xl font-bold mb-6 text-center">Lista de Empréstimos</h1>
+    <div className="min-h-screen bg-[#006400] flex flex-col items-center justify-start px-4 py-10 relative">
+      {/* Botão voltar no topo direito */}
+      <button
+        onClick={() => router.back()}
+        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+        aria-label="Voltar"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
+
+      <div className="w-full max-w-6xl bg-[#2e8b57] rounded-[30px] p-8 shadow-2xl z-10 text-white">
+        <h1 className="text-4xl font-bold text-center mb-8 flex items-center justify-center gap-3 drop-shadow">
+          <BookOpen className="w-8 h-8" /> Lista de Empréstimos
+        </h1>
+
         {carregando ? (
-          <p className="text-white text-center font-bold">Carregando...</p>
+          <p className="text-center text-lg font-semibold">Carregando...</p>
         ) : emprestimos.length === 0 ? (
-          <p className="text-white text-center font-bold">Nenhum empréstimo encontrado.</p>
+          <p className="text-center text-lg font-semibold">Nenhum empréstimo encontrado.</p>
         ) : (
-          <table className="w-full table-auto">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 text-white">Livro</th>
-                <th className="px-4 py-2 text-white">Solicitante</th>
-                <th className="px-4 py-2 text-white">Tipo</th>
-                <th className="px-4 py-2 text-white">Data Empréstimo</th>
-                <th className="px-4 py-2 text-white">Data Devolução</th>
-                <th className="px-4 py-2 text-white">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {emprestimos.map((e) => (
-                <tr key={e.id} className="bg-[#2e8b57] text-white">
-                  <td className="border border-[#006400] px-4 py-2">{e.nome_livro}</td>
-                  <td className="border border-[#006400] px-4 py-2">{e.nome_solicitante}</td>
-                  <td className="border border-[#006400] px-4 py-2 capitalize">{e.tipo_solicitante}</td>
-                  <td className="border border-[#006400] px-4 py-2">{e.data_emprestimo}</td>
-                  <td className="border border-[#006400] px-4 py-2">{e.data_devolucao}</td>
-                  <td className="border border-[#006400] px-4 py-2 font-semibold">
-                    {e.devolvido ? 'Devolvido' : 'Pendente'}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#1f6f43] text-white text-sm sm:text-base">
+                  <th className="px-4 py-3">Livro</th>
+                  <th className="px-4 py-3">Solicitante</th>
+                  <th className="px-4 py-3">Tipo</th>
+                  <th className="px-4 py-3">Data Empréstimo</th>
+                  <th className="px-4 py-3">Data Devolução</th>
+                  <th className="px-4 py-3">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {emprestimos.map((e, i) => (
+                  <tr
+                    key={e.id}
+                    className={i % 2 === 0 ? 'bg-[#2e8b57]' : 'bg-[#237e4d]'}
+                  >
+                    <td className="px-4 py-3 border border-[#006400]">{e.nome_livro}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{e.nome_solicitante}</td>
+                    <td className="px-4 py-3 border border-[#006400] capitalize">{e.tipo_solicitante}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{e.data_emprestimo}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{e.data_devolucao}</td>
+                    <td
+                      className={`px-4 py-3 border border-[#006400] font-semibold ${
+                        e.devolvido ? 'text-green-300' : 'text-yellow-300'
+                      }`}
+                    >
+                      {e.devolvido ? 'Devolvido' : 'Pendente'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

@@ -11,13 +11,7 @@ export default function Home() {
     
   <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] overflow-hidden">
   
-  <Image
-    src={brasao}
-    alt="Logo do Ceará"
-    width={600}
-    height={600}
-    className="pointer-events-none absolute top-10 left-0 z-[9999] w-32 sm:w-48 md:w-72 lg:w-[600px] h-auto"
-  />
+
 
   <div
     className="bg-[#2e8b57] rounded-[30px] flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-32 xl:px-64 2xl:px-96 space-y-12 max-w-screen-xl w-full transition-all duration-500 overflow-hidden"

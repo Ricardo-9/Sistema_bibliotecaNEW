@@ -103,13 +103,7 @@ function Perfil() {
 
   return (
     <div className="min-h-screen bg-[#006400] flex items-center justify-center px-4 py-10 relative">
-      <Image
-        src={brasao}
-        alt="Logo do Ceará"
-        width={600}
-        height={600}
-        className="pointer-events-none absolute top-10 left-0 z-0 w-32 sm:w-48 md:w-72 lg:w-[580px] h-auto opacity-10"
-      />
+      
 
       {/* Botão voltar */}
       <button
