@@ -71,12 +71,18 @@ function PesqAlunos({ role }: Props) {
   return (
     <div className="min-h-screen bg-[#006400] flex flex-col items-center justify-start px-4 py-10 relative">
       <button
-        onClick={() => router.push('/painel_aluno')}
-        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
-        aria-label="Voltar"
-      >
-        <ArrowLeft className="w-6 h-6" />
-      </button>
+  onClick={() => {
+    if (role === 'aluno') {
+      router.push('/painel_aluno')
+    } else {
+      router.push('/dashboard')
+    }
+  }}
+  className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+  aria-label="Voltar"
+>
+  <ArrowLeft className="w-6 h-6" />
+</button>
 
       <div className="w-full max-w-6xl bg-[#2e8b57] rounded-[30px] p-8 shadow-2xl z-10 text-white">
         <h1 className="text-4xl font-bold text-center mb-8 flex items-center justify-center gap-2 drop-shadow">

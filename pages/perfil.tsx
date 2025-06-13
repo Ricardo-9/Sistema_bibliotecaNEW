@@ -101,7 +101,7 @@ function Perfil() {
   }
 
   const handleRedirect = () => {
-    if (!usuario) return
+    
     if (usuario.tipo === 'aluno') {
       router.push('/painel_aluno')
     } else if (usuario.tipo === 'funcionario' || usuario.tipo === 'funcionario_administrador') {

@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
 import Cleave from 'cleave.js/react'
-import Image from 'next/image'
-import Img from './imgs/perfil-aluno.png'
+import { UserPlus, ArrowLeft } from 'lucide-react'
 
 export default function SignupAluno() {
   const router = useRouter()
@@ -21,67 +20,47 @@ export default function SignupAluno() {
     senha: '',
   })
   const [error, setError] = useState('')
+  const [msg, setMsg] = useState('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     const filteredValue = filterInput(name, value)
     setFormData({ ...formData, [name]: filteredValue })
+    setError('')
+    setMsg('')
   }
 
   const filterInput = (name: string, value: string) => {
     switch (name) {
-      case 'nome':
-        return value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').slice(0, 100)
-      case 'cpf':
-        return value.replace(/\D/g, '').slice(0, 11)
-      case 'telefone':
-        return value.replace(/\D/g, '').slice(0, 11)
-      case 'matricula':
-        return value.replace(/\D/g, '').slice(0, 7)
-      case 'endereco':
-        return value.slice(0, 150)
-      case 'email':
-        return value.slice(0, 100)
-      case 'serie':
-        return value.slice(0, 20)
-      case 'curso':
-        return value.slice(0, 50)
-      case 'senha':
-        return value.slice(0, 100)
-      default:
-        return value
+      case 'nome': return value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').slice(0, 100)
+      case 'cpf': case 'telefone': return value.replace(/\D/g, '').slice(0, 11)
+      case 'matricula': return value.replace(/\D/g, '').slice(0, 7)
+      case 'endereco': return value.slice(0, 150)
+      case 'email': return value.slice(0, 100)
+      case 'serie': return value.slice(0, 20)
+      case 'curso': return value.slice(0, 50)
+      case 'senha': return value.slice(0, 100)
+      default: return value
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setMsg('')
 
-    if (formData.matricula.length !== 7) {
-      setError('A matrícula deve conter exatamente 7 dígitos.')
-      return
-    }
-    if (formData.cpf.length !== 11) {
-      setError('O CPF deve conter exatamente 11 números.')
-      return
-    }
-    if (formData.telefone.length < 10) {
-      setError('Número de telefone inválido.')
-      return
-    }
+    if (formData.matricula.length !== 7) return setError('A matrícula deve conter 7 dígitos.')
+    if (formData.cpf.length !== 11) return setError('O CPF deve conter 11 números.')
+    if (formData.telefone.length < 10) return setError('Telefone inválido.')
 
     const { email, senha, ...dados } = formData
-
     const { data: authUser, error: signUpError } = await supabase.auth.signUp({
       email,
       password: senha,
       options: { data: { role: 'aluno' } },
     })
 
-    if (signUpError || !authUser.user) {
-      setError(signUpError?.message || 'Erro ao cadastrar')
-      return
-    }
+    if (signUpError || !authUser.user) return setError(signUpError?.message || 'Erro ao cadastrar.')
 
     const { error: insertError } = await supabase.from('alunos').insert({
       ...dados,
@@ -89,133 +68,109 @@ export default function SignupAluno() {
       user_id: authUser.user.id,
     })
 
-    if (insertError) {
-      setError(insertError.message)
-    } else {
-      router.push('/dashboard')
+    if (insertError) setError(insertError.message)
+    else {
+      setMsg('Cadastro realizado com sucesso!')
+      setTimeout(() => router.push('/dashboard'), 1500)
     }
   }
+
   return (
-    <div className="min-h-screen bg-[#006400] flex p-4">
-      <div
-        className="
-          w-full p-8 m-8 bg-[#2e8b57] rounded-lg shadow-md pt-[10px]
-          grid grid-rows-[auto_1fr_auto] gap-y-4 h-full
-        "
-      >
-        <div className="bg-[#2e8b57] flex items-center justify-center" id="imagem">
-          <Image src={Img} alt="imagem" />
-        </div>
-        <form
-  onSubmit={handleSubmit}
-  className="flex flex-col gap-6 bg-[#2e8b57] p-4 rounded-lg"
->
-  {/* Primeira linha: todos os inputs exceto senha */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {/* Coluna esquerda */}
-    <div className="flex flex-col gap-4">
-      <input
-        name="nome"
-        placeholder="Nome"
-        required
-        onChange={handleChange}
-        value={formData.nome}
-        className='p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold'
-      />
-      <Cleave
-        name="cpf"
-        placeholder="CPF"
-        required
-        options={{ delimiters: ['.', '.', '-'], blocks: [3, 3, 3, 2], numericOnly: true }}
-        value={formData.cpf}
-        onChange={handleChange}
-        className='p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold'
-      />
-      <input
-        name="matricula"
-        placeholder="Matrícula (7 dígitos)"
-        required
-        onChange={handleChange}
-        value={formData.matricula}
-        className='p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold'
-      />
-      <input
-        name="endereco"
-        placeholder="Endereço"
-        required
-        onChange={handleChange}
-        value={formData.endereco}
-        className='p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold'
-      />
-    </div>
-    {/* Coluna direita */}
-    <div className="flex flex-col gap-4">
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        required
-        maxLength={100}
-        onChange={handleChange}
-        value={formData.email}
-        className='p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold'
-      />
-      <Cleave
-        name="telefone"
-        placeholder="Telefone"
-        required
-        options={{ delimiters: ['(', ') ', ' ', '-'], blocks: [0, 2, 5, 4], numericOnly: true }}
-        value={formData.telefone}
-        onChange={handleChange}
-        className='p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold'
-      />
-      <select
-        name="serie"
-        value={formData.serie}
-        onChange={handleChange}
-        className='p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold'
-      >
-        <option value="1 ano">1° Ano</option>
-        <option value="2 ano">2° ano</option>
-        <option value="3 ano">3° ano</option>
-      </select>
-      <select
-        name="curso"
-        value={formData.curso}
-        onChange={handleChange}
-        className='p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold'
-      >
-        <option value="adm">Administração</option>
-        <option value="agro">Agropecuária</option>
-        <option value="infor">Informática</option>
-        <option value="regencia">Regência</option>
-      </select>
-    </div>
-  </div>
-  {/* Segunda linha: apenas senha centralizada */}
-  <div className="col-span-full flex justify-center">
-    <input
-      type="password"
-      name="senha"
-      placeholder="Senha"
-      required
-      minLength={6}
-      maxLength={50}
-      onChange={handleChange}
-      value={formData.senha}
-      className='w-full md:w-1/2 p-3 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold'
-    />
-  </div>
-  {/* Botões */}
-  <div className="col-span-full flex flex-col items-center mt-4">
-    <button type="submit" className="bg-[#006400] text-white font-bold rounded-full px-4 py-2 hover:bg-[#004d00] flex items-center justify-center">
-      Cadastre-se
-    </button>
-    {error && <p className="text-white font-bold">{error}</p>}
-    <button onClick={() => router.push('/')} className='bg-[#006400] text-white font-bold rounded-full absolute top-16 left-16 px-4 py-2 hover:bg-[#004d00]'>Voltar</button>
-  </div>
-</form>
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
+      {/* Botão de voltar */}
+      <div className="absolute top-4 right-4 flex gap-4 z-20">
+        <button
+          onClick={() => router.push('/')}
+          className="bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+          aria-label="Voltar"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </button>
       </div>
+
+      <div className="relative z-10 bg-[#2e8b57] rounded-[30px] p-8 sm:p-12 max-w-xl w-full shadow-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white text-center flex items-center gap-2 mb-8">
+          <UserPlus className="w-8 h-8" /> Cadastro de Aluno
+        </h1>
+
+        {error && <p className="text-red-400 text-center mb-4">{error}</p>}
+        {msg && <p className="text-green-400 text-center mb-4">{msg}</p>}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <input className="input-style" name="nome" placeholder="Nome completo" value={formData.nome} onChange={handleChange} required />
+          
+          <Cleave
+            className="w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30"
+            name="cpf"
+            placeholder="CPF"
+            value={formData.cpf}
+            onChange={handleChange}
+            options={{
+              delimiters: ['.', '.', '-'],
+              blocks: [3, 3, 3, 2],
+              numericOnly: true,
+            }}
+            required
+          />
+
+          <input className="input-style" name="matricula" placeholder="Matrícula (7 dígitos)" value={formData.matricula} onChange={handleChange} required />
+          <input className="input-style" name="endereco" placeholder="Endereço" value={formData.endereco} onChange={handleChange} required />
+          <input className="input-style" name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+
+          <Cleave
+            className="w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30"
+            name="telefone"
+            placeholder="Telefone"
+            value={formData.telefone}
+            onChange={handleChange}
+            options={{
+              delimiters: ['(', ') ', ' ', '-'],
+              blocks: [0, 2, 5, 4],
+              numericOnly: true,
+            }}
+            required
+          />
+
+          <select name="serie" value={formData.serie} onChange={handleChange} required className="input-style">
+            <option value="">Selecione a série</option>
+            <option value="1 ano">1º Ano</option>
+            <option value="2 ano">2º Ano</option>
+            <option value="3 ano">3º Ano</option>
+          </select>
+
+          <select name="curso" value={formData.curso} onChange={handleChange} required className="input-style">
+            <option value="">Selecione o curso</option>
+            <option value="adm">Administração</option>
+            <option value="agro">Agropecuária</option>
+            <option value="infor">Informática</option>
+            <option value="regencia">Regência</option>
+          </select>
+
+          <input className="input-style" name="senha" type="password" placeholder="Senha" value={formData.senha} onChange={handleChange} required minLength={6} />
+
+          <button type="submit" className="w-full bg-white text-[#006400] font-bold py-4 rounded-full hover:bg-emerald-100 transition shadow-lg">
+            Cadastrar
+          </button>
+        </form>
+      </div>
+
+      {/* Estilo aplicado a todos os inputs e selects */}
+      <style jsx>{`
+        .input-style {
+          width: 100%;
+          padding: 1rem;
+          border: none;
+          border-radius: 9999px;
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+          font-weight: 600;
+          color: #064e3b;
+          background-color: white;
+          outline: none;
+        }
+        .input-style:focus {
+          box-shadow: 0 0 0 4px #064e3b40;
+        }
+      `}</style>
     </div>
   )
 }

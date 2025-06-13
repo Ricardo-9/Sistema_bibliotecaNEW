@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
 import Cleave from 'cleave.js/react'
-import Image from 'next/image'
-import Img from './imgs/img2.png'
 
 export default function SignupFuncionario() {
   const router = useRouter()
@@ -84,121 +82,110 @@ export default function SignupFuncionario() {
     }
   }
 
-  const inputClasses = 'p-3 mt-2 border-4 bg-[#006400] rounded-full focus:outline-none focus:ring-2 h-20 placeholder:text-lg placeholder:font-bold pl-8 text-white font-bold'
+  const inputClasses = 'w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30 placeholder:text-lg placeholder:font-bold'
 
   return (
-    <div className="min-h-screen bg-[#006400] flex p-4">
-      <div
-        className="
-          w-full p-8 m-8 bg-[#2e8b57] rounded-lg shadow-md pt-[10px]
-          grid grid-rows- content-between gap-y-2 h-full
-        "
-      >
-        {/* Imagem */}
-        <div className="bg-[#2e8b57] flex items-center justify-center" id="imagem">
-          <Image src={Img} alt="imagem" />
-        </div>
+    <div className="min-h-screen bg-[#006400] flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-2xl p-10 bg-[#2e8b57] rounded-3xl shadow-xl">
+        <h1 className="text-white text-3xl font-bold text-center mb-8">Cadastro de Funcionário</h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <input
+            name="nome"
+            placeholder="Nome"
+            required
+            onChange={handleChange}
+            value={formData.nome}
+            className={inputClasses}
+          />
+          <input
+            name="funcao"
+            placeholder="Função"
+            required
+            onChange={handleChange}
+            value={formData.funcao}
+            className={inputClasses}
+          />
+          <Cleave
+            name="cpf"
+            placeholder="CPF"
+            options={{
+              delimiters: ['.', '.', '-'],
+              blocks: [3, 3, 3, 2],
+              numericOnly: true,
+            }}
+            value={formData.cpf}
+            onChange={handleChange}
+            className={inputClasses}
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            required
+            maxLength={100}
+            onChange={handleChange}
+            value={formData.email}
+            className={inputClasses}
+          />
+          <input
+            type="password"
+            name="senha"
+            placeholder="Senha"
+            required
+            minLength={6}
+            maxLength={50}
+            onChange={handleChange}
+            value={formData.senha}
+            className={inputClasses}
+          />
+          <input
+            name="endereco"
+            placeholder="Endereço"
+            required
+            maxLength={200}
+            onChange={handleChange}
+            value={formData.endereco}
+            className={inputClasses}
+          />
+          <Cleave
+            name="telefone"
+            placeholder="Telefone"
+            options={{
+              delimiters: ['(', ') ', ' ', '-'],
+              blocks: [0, 2, 5, 4],
+              numericOnly: true,
+            }}
+            value={formData.telefone}
+            onChange={handleChange}
+            className={inputClasses}
+          />
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className={inputClasses}
+          >
+            <option value="funcionario">Funcionário</option>
+            <option value="funcionario_administrador">Funcionário Administrador</option>
+          </select>
 
-        {/* Inputs */}
-        <div className="bg-[#2e8b57] p-4" id="inputs">
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Coluna esquerda */}
-            <div className="flex flex-col gap-4">
-              <input
-                name="nome"
-                placeholder="Nome"
-                required
-                onChange={handleChange}
-                value={formData.nome}
-                className={inputClasses}
-              />
-              <input
-                name="funcao"
-                placeholder="Função"
-                required
-                onChange={handleChange}
-                value={formData.funcao}
-                className={inputClasses}
-              />
-              <Cleave
-                name="cpf"
-                placeholder="CPF"
-                options={{
-                  delimiters: ['.', '.', '-'],
-                  blocks: [3, 3, 3, 2],
-                  numericOnly: true,
-                }}
-                value={formData.cpf}
-                onChange={handleChange}
-                className={inputClasses}
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                required
-                maxLength={100}
-                onChange={handleChange}
-                value={formData.email}
-                className={inputClasses}
-              />
-            </div>
-            {/* Coluna direita */}
-            <div className="flex flex-col gap-4">
-              <input
-                type="password"
-                name="senha"
-                placeholder="Senha"
-                required
-                minLength={6}
-                maxLength={50}
-                onChange={handleChange}
-                value={formData.senha}
-                className={inputClasses}
-              />
-              <input
-                name="endereco"
-                placeholder="Endereço"
-                required
-                maxLength={200}
-                onChange={handleChange}
-                value={formData.endereco}
-                className={inputClasses}
-              />
-              <Cleave
-                name="telefone"
-                placeholder="Telefone"
-                options={{
-                  delimiters: ['(', ') ', ' ', '-'],
-                  blocks: [0, 2, 5, 4],
-                  numericOnly: true,
-                }}
-                value={formData.telefone}
-                onChange={handleChange}
-                className={inputClasses}
-              />
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className={inputClasses}
-              >
-                <option value="funcionario">Funcionário</option>
-                <option value="funcionario_administrador">Funcionário Administrador</option>
-              </select>
-            </div>
-            {/* Botão */}
-            <div className="bg-[#2e8b57] col-span-full flex justify-center mt-4" id="botão">
-              <button type="submit" className="bg-[#006400] text-white font-bold rounded-full px-4 py-2 hover:bg-[#004d00] flex items-center justify-center">
-                Cadastre-se
-              </button>
-              {error && <p className="text-white">{error}</p>}
-              <button onClick={() => router.push('/')} className='bg-[#006400] text-white font-bold rounded-full absolute top-16 left-16 px-4 py-2 hover:bg-[#004d00]'>Voltar</button>
-            </div>
-          </form>
-        </div>
+          <button
+            type="submit"
+            className="bg-white text-emerald-900 font-bold rounded-full px-6 py-3 hover:bg-emerald-100 transition"
+          >
+            Cadastre-se
+          </button>
 
-        
+          {error && <p className="text-white text-center font-semibold">{error}</p>}
+
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="text-white text-center hover:underline mt-2"
+          >
+            Voltar para o início
+          </button>
+        </form>
       </div>
     </div>
   )

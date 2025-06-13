@@ -131,6 +131,41 @@ export default function Navbar() {
                 <ChartNoAxesCombined size={20} />
                 Painel Geral
               </button>
+              <button
+                onClick={() => navegar('/pesq_editoras')}
+                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
+              >
+                <ChartNoAxesCombined size={20} />
+                Pesquisa de editoras
+              </button>
+              <button
+                onClick={() => navegar('/p_emprestimos')}
+                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
+              >
+                <ChartNoAxesCombined size={20} />
+                Pesquisa de empréstimo
+              </button>
+              <button
+                onClick={() => navegar('/pesq_livros')}
+                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
+              >
+                <ChartNoAxesCombined size={20} />
+                Pesquisa de livro
+              </button>
+              <button
+                onClick={() => navegar('/pesq_alunos')}
+                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
+              >
+                <ChartNoAxesCombined size={20} />
+                Pesquisa de aluno
+              </button>
+              <button
+                onClick={() => navegar('/pesq_funcionario')}
+                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
+              >
+                <ChartNoAxesCombined size={20} />
+                Pesquisa de funcionário
+              </button>
 
             </nav>
 
