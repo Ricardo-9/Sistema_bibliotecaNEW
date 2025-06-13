@@ -1,8 +1,10 @@
 'use client'
+
 import { useRouter } from 'next/router'
 import { BookOpen, Search, UserCircle, LogOut } from 'lucide-react'
+import { withRoleProtection } from '../components/withRoleProtection' 
 
-export default function PainelAluno() {
+function PainelAluno() {
   const router = useRouter()
 
   const acoes = [
@@ -55,3 +57,6 @@ export default function PainelAluno() {
     </div>
   )
 }
+
+// Aqui a proteção para permitir acesso somente ao role 'aluno'
+export default withRoleProtection(PainelAluno, ['aluno'])

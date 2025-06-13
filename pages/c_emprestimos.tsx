@@ -4,15 +4,14 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection'
-import Image from 'next/image'
+
 import { BookOpen, ArrowLeft } from 'lucide-react'
-import brasao from './imgs/Bc.png.png'
+
 import Select from 'react-select'
 
 function CadastroEmprestimos() {
   const router = useRouter()
 
-  // Agora o valor do select será um objeto { value, label } ou null
   const [selectedLivro, setSelectedLivro] = useState<{ value: string; label: string } | null>(null)
   const [livrosDisponiveis, setLivrosDisponiveis] = useState<{ id: string; nome: string }[]>([])
   const [msg, setMsg] = useState<string | null>(null)
@@ -69,7 +68,6 @@ function CadastroEmprestimos() {
     fetchUsuario()
   }, [])
 
-  // Mapeia os livros para o formato esperado pelo react-select
   const options = livrosDisponiveis.map(livro => ({
     value: livro.id,
     label: livro.nome,
@@ -159,14 +157,23 @@ function CadastroEmprestimos() {
     setSelectedLivro(null)
   }
 
+  const handleRedirect = () => {
+    if (!usuario) return
+    if (usuario.tipo === 'aluno') {
+      router.push('/painel_aluno')
+    } else if (usuario.tipo === 'funcionario' || usuario.tipo === 'funcionario_administrador') {
+      router.push('/dashboard')
+    }
+  }
+
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-      
-
       {/* Botão voltar */}
       <button
-        onClick={() => router.push('/painel_aluno')}
-        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+        onClick={handleRedirect}
+        disabled={!usuario}
+        className={`absolute top-4 right-4 rounded-full p-2 shadow-md transition
+          ${usuario ? 'bg-white text-[#006400] hover:bg-emerald-100 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
       >
         <ArrowLeft className="w-6 h-6" />
       </button>
@@ -190,7 +197,7 @@ function CadastroEmprestimos() {
               control: (base) => ({
                 ...base,
                 backgroundColor: '#006400',
-                borderRadius: '9999px', // rounded-full
+                borderRadius: '9999px',
                 borderColor: 'transparent',
                 paddingLeft: '0.75rem',
                 color: 'white',

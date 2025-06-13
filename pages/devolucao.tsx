@@ -174,7 +174,7 @@ function PesqEmprestimos() {
   return (
     <div className="min-h-screen bg-[#006400] flex flex-col items-center justify-start px-4 py-10 relative">
       <button
-        onClick={() => router.push('/painel_funcionario')}
+        onClick={() => router.push('/dashboard')}
         className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
         aria-label="Voltar"
       >

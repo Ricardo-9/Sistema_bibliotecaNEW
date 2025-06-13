@@ -1,5 +1,5 @@
 'use client'
-
+import { withRoleProtection } from '../components/withRoleProtection'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
@@ -89,6 +89,7 @@ function PesqEmprestimos() {
   useEffect(() => {
     fetchEmprestimos()
   }, [])
+  
 
   return (
     <div className="min-h-screen bg-[#006400] flex flex-col items-center justify-start px-4 py-10 relative">
@@ -152,4 +153,4 @@ function PesqEmprestimos() {
   )
 }
 
-export default PesqEmprestimos
+export default withRoleProtection(PesqEmprestimos, ['funcionario','funcionario_administrador'])

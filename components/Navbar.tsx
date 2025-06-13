@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { Menu, X, BookOpen, User, LogOut ,Landmark ,Book} from 'lucide-react'
+import { Menu, X, BookOpen, User, LogOut ,Landmark ,Book ,ArrowUpDown, ChartNoAxesCombined} from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 const rotasSemNavbar = [
@@ -111,6 +111,13 @@ export default function Navbar() {
                 Cadastro de livros
               </button>
               <button
+                onClick={() => navegar('/devolucao')}
+                className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
+              >
+                <ArrowUpDown size={20} />
+                Tela de devolução
+              </button>
+              <button
                 onClick={() => navegar('/perfil')}
                 className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
               >
@@ -121,9 +128,10 @@ export default function Navbar() {
                 onClick={() => navegar('/dashboard')}
                 className="flex items-center gap-2 hover:text-[#d4f7dc] transition"
               >
-                <User size={20} />
+                <ChartNoAxesCombined size={20} />
                 Painel Geral
               </button>
+
             </nav>
 
             <div className="mt-auto pt-6 border-t border-white/30">

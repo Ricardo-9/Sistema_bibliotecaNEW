@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection'
-import Image from 'next/image'
-import brasao from './imgs/Bc.png.png'
+
 import {
   User,
   Mail,
@@ -26,7 +25,7 @@ type PerfilUsuario = {
   cpf: string
   endereco: string
   telefone: string
-  tipo: 'aluno' | 'funcionario'
+  tipo: 'aluno' | 'funcionario' | 'funcionario_administrador'
   matricula?: string
   curso?: string
   serie?: string
@@ -35,7 +34,7 @@ type PerfilUsuario = {
 
 function Perfil() {
   const router = useRouter()
-  const [perfil, setPerfil] = useState<PerfilUsuario | null>(null)
+  const [usuario, setUsuario] = useState<PerfilUsuario | null>(null)
   const [erro, setErro] = useState<string | null>(null)
 
   useEffect(() => {
@@ -57,7 +56,7 @@ function Perfil() {
         .maybeSingle()
 
       if (aluno) {
-        setPerfil({
+        setUsuario({
           nome: aluno.nome,
           email: aluno.email,
           cpf: aluno.cpf,
@@ -78,14 +77,14 @@ function Perfil() {
         .maybeSingle()
 
       if (funcionario) {
-        setPerfil({
+        setUsuario({
           nome: funcionario.nome,
           email: funcionario.email,
           cpf: funcionario.cpf,
           endereco: funcionario.endereco,
           telefone: funcionario.telefone,
           funcao: funcionario.funcao,
-          tipo: 'funcionario',
+          tipo: funcionario.funcao === 'administrador' ? 'funcionario_administrador' : 'funcionario',
         })
         return
       }
@@ -101,13 +100,19 @@ function Perfil() {
     router.push('/login')
   }
 
+  const handleRedirect = () => {
+    if (!usuario) return
+    if (usuario.tipo === 'aluno') {
+      router.push('/painel_aluno')
+    } else if (usuario.tipo === 'funcionario' || usuario.tipo === 'funcionario_administrador') {
+      router.push('/dashboard')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#006400] flex items-center justify-center px-4 py-10 relative">
-      
-
-      {/* Botão voltar */}
       <button
-        onClick={() => router.push('/painel_aluno')}
+        onClick={handleRedirect}
         className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
       >
         <ArrowLeft className="w-6 h-6" />
@@ -118,46 +123,43 @@ function Perfil() {
 
         {erro && <p className="text-red-300 font-semibold text-center">{erro}</p>}
 
-        {perfil ? (
+        {usuario ? (
           <div className="space-y-6 text-base sm:text-lg">
-            {/* Informações Pessoais */}
             <div className="bg-[#1f6f43] rounded-2xl p-6 shadow-md">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 border-b border-white pb-2">
                 <User className="w-5 h-5" /> Informações Pessoais
               </h2>
-              <p><strong>Nome:</strong> {perfil.nome}</p>
-              <p><strong>Email:</strong> <Mail className="inline w-4 h-4 mr-1" />{perfil.email}</p>
-              <p><strong>CPF:</strong> <BadgeCheck className="inline w-4 h-4 mr-1" />{perfil.cpf}</p>
-              <p><strong>Endereço:</strong> <MapPin className="inline w-4 h-4 mr-1" />{perfil.endereco}</p>
-              <p><strong>Telefone:</strong> <Phone className="inline w-4 h-4 mr-1" />{perfil.telefone}</p>
+              <p><strong>Nome:</strong> {usuario.nome}</p>
+              <p><strong>Email:</strong> <Mail className="inline w-4 h-4 mr-1" />{usuario.email}</p>
+              <p><strong>CPF:</strong> <BadgeCheck className="inline w-4 h-4 mr-1" />{usuario.cpf}</p>
+              <p><strong>Endereço:</strong> <MapPin className="inline w-4 h-4 mr-1" />{usuario.endereco}</p>
+              <p><strong>Telefone:</strong> <Phone className="inline w-4 h-4 mr-1" />{usuario.telefone}</p>
             </div>
 
-            {/* Informações Acadêmicas / Funcionais */}
-            {perfil.tipo === 'aluno' && (
+            {usuario.tipo === 'aluno' && (
               <div className="bg-[#1f6f43] rounded-2xl p-6 shadow-md">
                 <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 border-b border-white pb-2">
                   <GraduationCap className="w-5 h-5" /> Informações Acadêmicas
                 </h2>
-                <p><strong>Matrícula:</strong> {perfil.matricula}</p>
-                <p><strong>Série:</strong> {perfil.serie}</p>
-                <p><strong>Curso:</strong> {perfil.curso}</p>
+                <p><strong>Matrícula:</strong> {usuario.matricula}</p>
+                <p><strong>Série:</strong> {usuario.serie}</p>
+                <p><strong>Curso:</strong> {usuario.curso}</p>
               </div>
             )}
 
-            {perfil.tipo === 'funcionario' && (
+            {usuario.tipo === 'funcionario' || usuario.tipo === 'funcionario_administrador' ? (
               <div className="bg-[#1f6f43] rounded-2xl p-6 shadow-md">
                 <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 border-b border-white pb-2">
                   <User className="w-5 h-5" /> Informações Funcionais
                 </h2>
-                <p><strong>Função:</strong> {perfil.funcao}</p>
+                <p><strong>Função:</strong> {usuario.funcao}</p>
               </div>
-            )}
+            ) : null}
 
             <div className="text-center">
-              <p><strong>Tipo de Usuário:</strong> {perfil.tipo}</p>
+              <p><strong>Tipo de Usuário:</strong> {usuario.tipo}</p>
             </div>
 
-            {/* Botões de ação */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
               <button
                 onClick={() => router.push('/editar-perfil')}

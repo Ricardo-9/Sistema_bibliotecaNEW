@@ -6,6 +6,7 @@ import { Lock, ArrowLeftCircle } from 'lucide-react'
 export default function Unauthorized() {
   const router = useRouter()
 
+
   return (
     <div className="min-h-screen bg-[#006400] flex items-center justify-center px-4 py-10">
       <div className="bg-[#2e8b57] text-white rounded-3xl shadow-lg w-full max-w-xl p-10 md:p-16 text-center space-y-8">
