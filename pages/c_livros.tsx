@@ -5,7 +5,8 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import Cleave from 'cleave.js/react'
 import Image from 'next/image'
-import brasao from './imgs/Bc.png.png' // ajuste o caminho conforme sua estrutura
+import { BookOpenText, ArrowLeft } from 'lucide-react'
+import brasao from './imgs/Bc.png.png'
 import { withRoleProtection } from '../components/withRoleProtection'
 
 function CadastroLivros() {
@@ -122,15 +123,25 @@ function CadastroLivros() {
         className="pointer-events-none absolute top-10 left-0 z-0 w-32 sm:w-48 md:w-72 lg:w-[580px] h-auto opacity-10"
       />
 
-      <div className="relative z-10 bg-[#2e8b57] rounded-3xl p-8 sm:p-12 max-w-xl w-full shadow-2xl">
-        <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8">Cadastro de Livros</h1>
+      {/* Botão voltar */}
+      <button
+        onClick={() => router.push('/dashboard')}
+        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
+
+      <div className="relative z-10 bg-[#2e8b57] rounded-[30px] p-8 sm:p-12 max-w-xl w-full shadow-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8 flex items-center justify-center gap-3 drop-shadow">
+          <BookOpenText className="w-8 h-8" /> Cadastro de Livros
+        </h1>
 
         {error && <p className="text-red-400 text-center mb-4">{error}</p>}
         {mensagem && <p className="text-green-400 text-center mb-4">{mensagem}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
-            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             type="text"
             name="nome"
             placeholder="Nome do livro"
@@ -140,7 +151,7 @@ function CadastroLivros() {
             autoComplete="off"
           />
           <input
-            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             type="number"
             min={1000}
             max={new Date().getFullYear()}
@@ -152,7 +163,7 @@ function CadastroLivros() {
             autoComplete="off"
           />
           <input
-            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             type="text"
             name="categoria"
             placeholder="Categoria do livro"
@@ -162,7 +173,7 @@ function CadastroLivros() {
             autoComplete="off"
           />
           <Cleave
-            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             name="isbn"
             placeholder="000-0-00-000000-0"
             value={form.isbn}
@@ -175,7 +186,7 @@ function CadastroLivros() {
             required
           />
           <input
-            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             type="text"
             name="autor"
             placeholder="Nome do autor"
@@ -185,7 +196,7 @@ function CadastroLivros() {
             autoComplete="off"
           />
           <input
-            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             type="number"
             min={0}
             name="q_disponivel"
@@ -196,7 +207,7 @@ function CadastroLivros() {
             autoComplete="off"
           />
           <input
-            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             type="text"
             name="editora"
             placeholder="Nome da editora"
@@ -208,19 +219,11 @@ function CadastroLivros() {
 
           <button
             type="submit"
-            className="w-full bg-[#006400] text-white font-bold py-4 rounded-full hover:bg-[#004d00] transition-transform transform hover:scale-105 shadow-lg"
+            className="w-full bg-white text-[#006400] font-bold py-4 rounded-full hover:bg-emerald-100 transition shadow-lg"
           >
             Cadastrar
           </button>
         </form>
-<br></br>
-        <button
-              type="button"
-              onClick={() => router.push('/dashboard')}
-              className="w-full bg-transparent border border-white py-2 rounded-[20px] hover:bg-white hover:text-[#006400] transition duration-300"
-            >
-              Voltar
-            </button>
       </div>
     </div>
   )

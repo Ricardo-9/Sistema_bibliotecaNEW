@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  background-color: #006400;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  color: #006400;
+  text-size-adjust: 0px;
+}

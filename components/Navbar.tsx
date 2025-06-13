@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { X, Menu } from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -22,7 +23,35 @@ const Navbar = () => {
   ]
 
   useEffect(() => {
-    setMostrarNavbar(!rotasSemNavbar.includes(router.pathname))
+    const verificarUsuario = async () => {
+      // Oculta para as rotas da lista
+      if (rotasSemNavbar.includes(router.pathname)) {
+        setMostrarNavbar(false)
+        return
+      }
+
+      // Verifica se é aluno
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setMostrarNavbar(false)
+        return
+      }
+
+      const { data: aluno } = await supabase
+        .from('alunos')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      // Se for aluno, oculta a navbar
+      if (aluno) {
+        setMostrarNavbar(false)
+      } else {
+        setMostrarNavbar(true)
+      }
+    }
+
+    verificarUsuario()
   }, [router.pathname])
 
   const navegar = (rota: string) => {
@@ -34,7 +63,6 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Botão de menu - só aparece quando a navbar está fechada */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
@@ -66,8 +94,6 @@ const Navbar = () => {
               <button onClick={() => navegar('/perfil')} className="text-left hover:text-[#d4f7dc]">Perfil do usuário</button>
               <button onClick={() => navegar('/dashboard')} className="text-left hover:text-[#d4f7dc]">Dashboard</button>
             </nav>
-
-            
           </div>
         </div>
       )}

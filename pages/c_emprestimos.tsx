@@ -5,19 +5,20 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection'
 import Image from 'next/image'
-import brasao from './imgs/Bc.png.png' // Ajuste o caminho se necessário
+import { Book, ArrowLeft } from 'lucide-react'
+import brasao from './imgs/Bc.png.png'
+import Select from 'react-select'
 
 function CadastroEmprestimos() {
   const router = useRouter()
-  const [form, setForm] = useState({
-    nome_livro: '',
-    nome_pessoa: '',
-  })
 
+  // Agora o valor do select será um objeto { value, label } ou null
+  const [selectedLivro, setSelectedLivro] = useState<{ value: string; label: string } | null>(null)
   const [livrosDisponiveis, setLivrosDisponiveis] = useState<{ id: string; nome: string }[]>([])
   const [msg, setMsg] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [dataDevolucaoFormatada, setDataDevolucaoFormatada] = useState<string | null>(null)
+  const [usuario, setUsuario] = useState<{ id: string, tipo: 'aluno' | 'funcionario' | 'funcionario_administrador' } | null>(null)
 
   useEffect(() => {
     async function fetchLivros() {
@@ -33,24 +34,63 @@ function CadastroEmprestimos() {
         setError('Erro ao carregar os livros disponíveis')
       }
     }
+
+    async function fetchUsuario() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setError('Usuário não autenticado')
+        return
+      }
+
+      const { data: aluno } = await supabase
+        .from('alunos')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (aluno) {
+        setUsuario({ id: aluno.id, tipo: 'aluno' })
+      } else {
+        const { data: funcionario } = await supabase
+          .from('funcionarios')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (funcionario) {
+          setUsuario({ id: funcionario.id, tipo: 'funcionario' })
+        } else {
+          setError('Usuário não encontrado nas tabelas de alunos ou funcionários')
+        }
+      }
+    }
+
     fetchLivros()
+    fetchUsuario()
   }, [])
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    })
-    setMsg(null)
-    setError(null)
-  }
+  // Mapeia os livros para o formato esperado pelo react-select
+  const options = livrosDisponiveis.map(livro => ({
+    value: livro.id,
+    label: livro.nome,
+  }))
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setMsg(null)
     setError(null)
 
-    const livroSelecionado = livrosDisponiveis.find(l => String(l.id) === String(form.nome_livro))
+    if (!usuario) {
+      setError('Usuário não autenticado corretamente.')
+      return
+    }
+
+    if (!selectedLivro) {
+      setError('Selecione um livro')
+      return
+    }
+
+    const livroSelecionado = livrosDisponiveis.find(l => l.id === selectedLivro.value)
     if (!livroSelecionado) {
       setError('Livro não encontrado')
       return
@@ -59,7 +99,7 @@ function CadastroEmprestimos() {
     const { data: livroDados, error: erroLivro } = await supabase
       .from('livros')
       .select('q_disponivel')
-      .eq('id', form.nome_livro)
+      .eq('id', selectedLivro.value)
       .maybeSingle()
 
     if (erroLivro || !livroDados) {
@@ -72,47 +112,17 @@ function CadastroEmprestimos() {
       return
     }
 
-    let solicitante_id: string | null = null
-    let tipo_solicitante: 'aluno' | 'funcionario' | null = null
-
-    const { data: aluno } = await supabase
-      .from('alunos')
-      .select('id')
-      .ilike('nome', form.nome_pessoa)
-      .maybeSingle()
-
-    if (aluno) {
-      solicitante_id = aluno.id
-      tipo_solicitante = 'aluno'
-    } else {
-      const { data: funcionario } = await supabase
-        .from('funcionarios')
-        .select('id')
-        .ilike('nome', form.nome_pessoa)
-        .maybeSingle()
-
-      if (funcionario) {
-        solicitante_id = funcionario.id
-        tipo_solicitante = 'funcionario'
-      }
-    }
-
-    if (!solicitante_id || !tipo_solicitante) {
-      setError('Pessoa não encontrada (aluno ou funcionário)')
-      return
-    }
-
     const { data: emprestimoExistente } = await supabase
       .from('emprestimos')
       .select('*')
-      .eq('nome_livro', form.nome_livro)
-      .eq('solicitante_id', solicitante_id)
-      .eq('tipo_solicitante', tipo_solicitante)
+      .eq('nome_livro', selectedLivro.value)
+      .eq('solicitante_id', usuario.id)
+      .eq('tipo_solicitante', usuario.tipo)
       .is('devolvido', null)
       .maybeSingle()
 
     if (emprestimoExistente) {
-      setError('Este usuário já possui este livro emprestado.')
+      setError('Você já possui este livro emprestado.')
       return
     }
 
@@ -120,14 +130,12 @@ function CadastroEmprestimos() {
     const dataDevolucao = new Date()
     dataDevolucao.setDate(dataEmprestimo.getDate() + 30)
 
-    const { error: erroInsercao } = await supabase.from('emprestimos').insert([
-      {
-        nome_livro: form.nome_livro,
-        solicitante_id,
-        tipo_solicitante,
-        data_devolucao: dataDevolucao.toISOString(),
-      },
-    ])
+    const { error: erroInsercao } = await supabase.from('emprestimos').insert([{
+      nome_livro: selectedLivro.value,
+      solicitante_id: usuario.id,
+      tipo_solicitante: usuario.tipo,
+      data_devolucao: dataDevolucao.toISOString(),
+    }])
 
     if (erroInsercao) {
       setError('Erro ao registrar empréstimo')
@@ -137,7 +145,7 @@ function CadastroEmprestimos() {
     const { error: erroAtualizacao } = await supabase
       .from('livros')
       .update({ q_disponivel: livroDados.q_disponivel - 1 })
-      .eq('id', form.nome_livro)
+      .eq('id', selectedLivro.value)
 
     if (erroAtualizacao) {
       setError('Erro ao atualizar quantidade de livros')
@@ -145,15 +153,10 @@ function CadastroEmprestimos() {
     }
 
     setDataDevolucaoFormatada(
-      dataDevolucao.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      })
+      dataDevolucao.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
     )
-
     setMsg('Empréstimo efetuado com sucesso.')
-    setForm({ nome_livro: '', nome_pessoa: '' })
+    setSelectedLivro(null)
   }
 
   return (
@@ -166,59 +169,70 @@ function CadastroEmprestimos() {
         className="pointer-events-none absolute top-10 left-0 z-0 w-32 sm:w-48 md:w-72 lg:w-[580px] h-auto opacity-10"
       />
 
-      <div className="relative z-10 bg-[#2e8b57] rounded-3xl p-8 sm:p-12 max-w-xl w-full shadow-2xl">
-        <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8">Cadastro de Empréstimos</h1>
+      {/* Botão voltar */}
+      <button
+        onClick={() => router.push('/painel_aluno')}
+        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
+
+      <div className="relative z-10 bg-[#2e8b57] rounded-[30px] p-8 sm:p-12 max-w-xl w-full shadow-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8 flex items-center justify-center gap-3 drop-shadow">
+          <Book className="w-8 h-8" /> Cadastro de Empréstimos
+        </h1>
 
         {error && <p className="text-red-400 text-center mb-4">{error}</p>}
         {msg && <p className="text-green-400 text-center mb-4">{msg}</p>}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <select
-            name="nome_livro"
-            id="nome_livro"
-            value={form.nome_livro}
-            onChange={handleChange}
-            required
-            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
-          >
-            <option value="" disabled>Selecione um livro</option>
-            {livrosDisponiveis.map((livro) => (
-              <option key={livro.id} value={livro.id}>{livro.nome}</option>
-            ))}
-          </select>
-
-          <input
-            type="text"
-            name="nome_pessoa"
-            id="nome_pessoa"
-            value={form.nome_pessoa}
-            onChange={handleChange}
-            required
-            placeholder="Digite o nome do aluno ou funcionário"
-            className="w-full p-4 rounded-lg border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
-            autoComplete="off"
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Select
+            options={options}
+            value={selectedLivro}
+            onChange={(option) => setSelectedLivro(option)}
+            placeholder="Selecione um livro"
+            isClearable
+            styles={{
+              control: (base) => ({
+                ...base,
+                backgroundColor: '#006400',
+                borderRadius: '9999px', // rounded-full
+                borderColor: 'transparent',
+                paddingLeft: '0.75rem',
+                color: 'white',
+                boxShadow: '0 0 10px rgba(0,100,0,0.5)',
+              }),
+              singleValue: (base) => ({
+                ...base,
+                color: 'white',
+              }),
+              placeholder: (base) => ({
+                ...base,
+                color: 'rgba(255, 255, 255, 0.7)',
+              }),
+              menu: (base) => ({
+                ...base,
+                borderRadius: '15px',
+              }),
+              option: (base, state) => ({
+                ...base,
+                backgroundColor: state.isFocused ? '#004d00' : 'white',
+                color: state.isFocused ? 'white' : 'black',
+                cursor: 'pointer',
+              }),
+            }}
           />
 
           <button
             type="submit"
-            className="w-full bg-[#006400] text-white font-bold py-4 rounded-full hover:bg-[#004d00] transition-transform transform hover:scale-105 shadow-lg"
+            className="w-full bg-white text-[#006400] font-bold py-4 rounded-full hover:bg-emerald-100 transition shadow-lg"
           >
             Cadastrar
           </button>
         </form>
 
-        
-        <br></br>
-        <button
-              type="button"
-              onClick={() => router.push('/dashboard')}
-              className="w-full bg-transparent border border-white py-2 rounded-[20px] hover:bg-white hover:text-[#006400] transition duration-300"
-            >
-              Voltar
-            </button>
-
         {dataDevolucaoFormatada && (
-          <p className="mt-4 text-center text-white font-medium">
+          <p className="mt-6 text-center text-white font-medium">
             Data limite para devolução: <strong>{dataDevolucaoFormatada}</strong>
           </p>
         )}

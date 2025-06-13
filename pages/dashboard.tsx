@@ -1,19 +1,21 @@
 'use client'
 
+import { withRoleProtection } from '../components/withRoleProtection'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from 'recharts'
+  BookOpen,
+  User,
+  UserCheck,
+  Landmark,
+} from 'lucide-react'
 
-export default function DashboardPesquisaUnificada() {
+type Props = {
+  role: string // vem do HOC
+}
+
+function DashboardPesquisaUnificada({ role }: Props) {
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [dados, setDados] = useState({
@@ -59,58 +61,77 @@ export default function DashboardPesquisaUnificada() {
     fetchDados()
   }, [])
 
-  if (loading) return <p className="p-4">Carregando...</p>
+  if (loading) return <p className="p-4 text-white">Carregando...</p>
   if (erro) return <p className="text-red-500 p-4">Erro: {erro}</p>
 
-  const totalUsuarios = dados.alunos + dados.funcionarios
-
-  const data = [
-    { nome: 'Alunos', total: dados.alunos },
-    { nome: 'Funcionários', total: dados.funcionarios },
-    { nome: 'Editoras', total: dados.editoras },
-    { nome: 'Livros', total: dados.livros },
+  const cards = [
+    {
+      nome: 'Alunos',
+      total: dados.alunos,
+      icon: <User className="w-10 h-10 text-green-600" />,
+    },
+    {
+      nome: 'Funcionários',
+      total: dados.funcionarios,
+      icon: <UserCheck className="w-10 h-10 text-green-600" />,
+    },
+    {
+      nome: 'Editoras',
+      total: dados.editoras,
+      icon: <Landmark className="w-10 h-10 text-green-600" />,
+    },
+    {
+      nome: 'Livros',
+      total: dados.livros,
+      icon: <BookOpen className="w-10 h-10 text-green-600" />,
+    },
   ]
 
-return (
-  <div className="min-h-screen bg-[#006400] py-10">
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center text-white">Painel Geral</h1>
+  const botoes = [
+    { label: 'Pesquisar Editoras', path: '/pesq_editoras' },
+      { label: 'Pesquisar Livros', path: '/pesq_livros' },
+      { label: 'Pesquisar Empréstimos', path: '/p_emprestimos' },
+    ...(role === 'funcionario_administrador' ? [
+      { label: 'Pesquisar Alunos', path: '/pesq_alunos' },
+    { label: 'Pesquisar Funcionários', path: '/pesq_funcionarios' },
+      
+      
+      
+    ] : []),
+  ]
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-        {data.map((item) => (
-          <div key={item.nome} className="bg-white rounded-2xl shadow p-4">
-            <h2 className="text-xl font-semibold mb-2 text-gray-800">{item.nome}</h2>
-            <ResponsiveContainer width="100%" height={150}>
-              <BarChart data={[item]} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="nome" hide />
-                <Tooltip />
-                <Bar dataKey="total" fill="#16a34a" barSize={30} radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-            <p className="text-center text-lg mt-2">Total: {item.total}</p>
-          </div>
-        ))}
-      </div>
+  return (
+    <div className="min-h-screen bg-[#006400] py-10">
+      <div className="p-6 max-w-6xl mx-auto">
+        <h1 className="text-4xl font-bold mb-10 text-center text-white">Painel Geral</h1>
 
-      <div className="bg-white p-6 rounded-2xl shadow grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {[
-          { label: "Pesquisar Alunos", path: "/pesq_alunos" },
-          { label: "Pesquisar Funcionários", path: "/pesq_funcionarios" },
-          { label: "Pesquisar Editoras", path: "/pesq_editoras" },
-          { label: "Pesquisar Livros", path: "/pesq_livros" },
-          { label: "Pesquisar Empréstimos", path: "/p_emprestimos" },
-        ].map(({ label, path }) => (
-          <button
-            key={label}
-            onClick={() => router.push(path)}
-            className="w-full bg-[#004d00] hover:bg-[#003f00] text-white font-semibold py-4 px-6 rounded-[70px] transition duration-300 shadow-md"
-          >
-            {label}
-          </button>
-        ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+          {cards.map((item) => (
+            <div
+              key={item.nome}
+              className="bg-white rounded-2xl shadow p-6 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-300"
+            >
+              {item.icon}
+              <h2 className="text-lg font-semibold text-gray-800 mt-4">{item.nome}</h2>
+              <p className="text-3xl font-bold text-green-700 mt-2">{item.total}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {botoes.map(({ label, path }) => (
+            <button
+              key={label}
+              onClick={() => router.push(path)}
+              className="w-full bg-[#004d00] hover:bg-[#003f00] text-white font-semibold py-4 px-6 rounded-[70px] transition duration-300 shadow-md"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
-  </div>
-)}
+  )
+}
+
+export default withRoleProtection(DashboardPesquisaUnificada, ['funcionario', 'funcionario_administrador'])
