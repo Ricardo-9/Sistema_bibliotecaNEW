@@ -1,11 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  reactStrictMode: true,  // ajuda a detectar problemas no React
   images: {
-    unoptimized: true,
+    unoptimized: true,    // mantém sua configuração para imagens (use se necessário)
   },
-  basePath: '/Sistema_bibliotecaNEW',
-  assetPrefix: '/Sistema_bibliotecaNEW/',
+  // Removi basePath e assetPrefix para deploy no Vercel na raiz
 }
 
 module.exports = nextConfig
