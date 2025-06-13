@@ -71,7 +71,7 @@ export default function SignupAluno() {
     if (insertError) setError(insertError.message)
     else {
       setMsg('Cadastro realizado com sucesso!')
-      setTimeout(() => router.push('/dashboard'), 1500)
+      setTimeout(() => router.push('/painel_aluno'), 1500)
     }
   }
 
