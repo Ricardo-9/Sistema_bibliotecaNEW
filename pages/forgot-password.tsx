@@ -45,7 +45,7 @@ export default function ForgotPassword() {
     if (session) {
       router.push('/dashboard')
     } else {
-      router.push('/login')
+      router.push('/')
     }
   }
 

@@ -127,7 +127,7 @@ export default function Navbar() {
                   <button onClick={() => navegar('/pesq_alunos')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
                     <UserRoundSearch size={20} /> Pesquisa de aluno
                   </button>
-                  <button onClick={() => navegar('/pesq_funcionario')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
+                  <button onClick={() => navegar('/pesq_funcionarios')} className="flex items-center gap-2 hover:text-[#d4f7dc] transition">
                     <UserRoundSearch size={20} /> Pesquisa de funcionário
                   </button>
                 </>

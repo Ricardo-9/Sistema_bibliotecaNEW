@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
 import Cleave from 'cleave.js/react'
+import { ArrowLeft } from 'lucide-react'
 
 export default function SignupFuncionario() {
   const router = useRouter()
@@ -85,106 +86,65 @@ export default function SignupFuncionario() {
   const inputClasses = 'w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30 placeholder:text-lg placeholder:font-bold'
 
   return (
-    <div className="min-h-screen bg-[#006400] flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-[#006400] flex items-center justify-center px-4 py-10 relative">
+      {/* Botão de voltar com verificação de role */}
+      <div className="absolute top-4 right-4 z-10">
+        <button
+          onClick={async () => {
+            const { data, error } = await supabase.auth.getUser()
+            if (error || !data?.user) {
+              router.push('/')
+              return
+            }
+
+            const role = data.user.user_metadata?.role
+            if (role === 'funcionario_administrador') {
+              router.push('/dashboard')
+            } else {
+              router.push('/')
+            }
+          }}
+          className="bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+          aria-label="Voltar"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+      </div>
+
       <div className="w-full max-w-2xl p-10 bg-[#2e8b57] rounded-3xl shadow-xl">
         <h1 className="text-white text-3xl font-bold text-center mb-8">Cadastro de Funcionário</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <input
-            name="nome"
-            placeholder="Nome"
-            required
-            onChange={handleChange}
-            value={formData.nome}
-            className={inputClasses}
-          />
-          <input
-            name="funcao"
-            placeholder="Função"
-            required
-            onChange={handleChange}
-            value={formData.funcao}
-            className={inputClasses}
-          />
+          <input name="nome" placeholder="Nome" required onChange={handleChange} value={formData.nome} className={inputClasses} />
+          <input name="funcao" placeholder="Função" required onChange={handleChange} value={formData.funcao} className={inputClasses} />
           <Cleave
             name="cpf"
             placeholder="CPF"
-            options={{
-              delimiters: ['.', '.', '-'],
-              blocks: [3, 3, 3, 2],
-              numericOnly: true,
-            }}
+            options={{ delimiters: ['.', '.', '-'], blocks: [3, 3, 3, 2], numericOnly: true }}
             value={formData.cpf}
             onChange={handleChange}
             className={inputClasses}
           />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            required
-            maxLength={100}
-            onChange={handleChange}
-            value={formData.email}
-            className={inputClasses}
-          />
-          <input
-            type="password"
-            name="senha"
-            placeholder="Senha"
-            required
-            minLength={6}
-            maxLength={50}
-            onChange={handleChange}
-            value={formData.senha}
-            className={inputClasses}
-          />
-          <input
-            name="endereco"
-            placeholder="Endereço"
-            required
-            maxLength={200}
-            onChange={handleChange}
-            value={formData.endereco}
-            className={inputClasses}
-          />
+          <input type="email" name="email" placeholder="Email" required maxLength={100} onChange={handleChange} value={formData.email} className={inputClasses} />
+          <input type="password" name="senha" placeholder="Senha" required minLength={6} maxLength={50} onChange={handleChange} value={formData.senha} className={inputClasses} />
+          <input name="endereco" placeholder="Endereço" required maxLength={200} onChange={handleChange} value={formData.endereco} className={inputClasses} />
           <Cleave
             name="telefone"
             placeholder="Telefone"
-            options={{
-              delimiters: ['(', ') ', ' ', '-'],
-              blocks: [0, 2, 5, 4],
-              numericOnly: true,
-            }}
+            options={{ delimiters: ['(', ') ', ' ', '-'], blocks: [0, 2, 5, 4], numericOnly: true }}
             value={formData.telefone}
             onChange={handleChange}
             className={inputClasses}
           />
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            className={inputClasses}
-          >
+          <select name="role" value={formData.role} onChange={handleChange} className={inputClasses}>
             <option value="funcionario">Funcionário</option>
             <option value="funcionario_administrador">Funcionário Administrador</option>
           </select>
 
-          <button
-            type="submit"
-            className="bg-white text-emerald-900 font-bold rounded-full px-6 py-3 hover:bg-emerald-100 transition"
-          >
+          <button type="submit" className="bg-white text-emerald-900 font-bold rounded-full px-6 py-3 hover:bg-emerald-100 transition">
             Cadastre-se
           </button>
 
           {error && <p className="text-white text-center font-semibold">{error}</p>}
-
-          <button
-            type="button"
-            onClick={() => router.push('/')}
-            className="text-white text-center hover:underline mt-2"
-          >
-            Voltar para o início
-          </button>
         </form>
       </div>
     </div>

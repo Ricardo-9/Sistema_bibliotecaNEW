@@ -77,7 +77,7 @@ export default function Home() {
 
             <div className="space-y-6">
               <div className="relative">
-                <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 text-white opacity-70" size={24} />
+                <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 text-white" size={24} />
                 <input
                   type="email"
                   placeholder="Digite seu email"
@@ -88,7 +88,7 @@ export default function Home() {
               </div>
 
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white opacity-70" size={24} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white" size={24} />
                 <input
                   type="password"
                   placeholder="Digite sua senha"

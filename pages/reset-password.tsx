@@ -33,7 +33,7 @@ export default function ResetPassword() {
     } else {
       setMessage('Senha redefinida com sucesso! Redirecionando...')
       setTimeout(() => {
-        router.push('/login')
+        router.push('/')
       }, 2000)
     }
 
@@ -45,7 +45,7 @@ export default function ResetPassword() {
     if (session) {
       router.push('/dashboard')
     } else {
-      router.push('/login')
+      router.push('/')
     }
   }
 

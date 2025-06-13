@@ -77,10 +77,24 @@ export default function SignupAluno() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-      {/* Botão de voltar */}
+      {/* Botão de voltar com redirecionamento condicional */}
       <div className="absolute top-4 right-4 flex gap-4 z-20">
         <button
-          onClick={() => router.push('/')}
+          onClick={async () => {
+            const { data, error } = await supabase.auth.getUser()
+
+            if (error || !data?.user) {
+              router.push('/')
+              return
+            }
+
+            const role = data.user.user_metadata?.role
+            if (role === 'funcionario_administrador') {
+              router.push('/dashboard')
+            } else {
+              router.push('/')
+            }
+          }}
           className="bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
           aria-label="Voltar"
         >
