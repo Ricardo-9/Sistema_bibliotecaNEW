@@ -124,7 +124,7 @@ export default function SignupAluno() {
           <input className="input-style" name="nome" placeholder="Nome completo" value={formData.nome} onChange={handleChange} required />
 
           <Cleave
-            className="input-style"
+            className="w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30"
             name="cpf"
             placeholder="CPF"
             value={formData.cpf}
@@ -142,7 +142,7 @@ export default function SignupAluno() {
           <input className="input-style" name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
 
           <Cleave
-            className="input-style"
+            className="w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30"
             name="telefone"
             placeholder="Telefone"
             value={formData.telefone}
