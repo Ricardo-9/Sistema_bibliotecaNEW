@@ -31,7 +31,7 @@ function EditarAluno() {
     return str.replace(/\D/g, '')
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -182,8 +182,6 @@ function EditarAluno() {
             { name: 'matricula', placeholder: 'Matrícula (7 dígitos)' },
             { name: 'endereco', placeholder: 'Endereço' },
             { name: 'email', placeholder: 'Email', type: 'email' },
-            { name: 'serie', placeholder: 'Série' },
-            { name: 'curso', placeholder: 'Curso' }
           ].map(({ name, placeholder, type }) => (
             <input
               key={name}
@@ -213,6 +211,21 @@ function EditarAluno() {
             className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             options={{ blocks: [0, 2, 5, 4], delimiters: ['(', ') ', '-', ''], numericOnly: true }}
           />
+
+          <select name="serie" value={formData.serie} onChange={handleChange} required className="w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30">
+            <option value="">Selecione a série</option>
+            <option value="1 ano">1º Ano</option>
+            <option value="2 ano">2º Ano</option>
+            <option value="3 ano">3º Ano</option>
+          </select>
+
+          <select name="curso" value={formData.curso} onChange={handleChange} required className="w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30">
+            <option value="">Selecione o curso</option>
+            <option value="adm">Administração</option>
+            <option value="agro">Agropecuária</option>
+            <option value="infor">Informática</option>
+            <option value="regencia">Regência</option>
+          </select>
 
           <button
             type="submit"
