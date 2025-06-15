@@ -90,14 +90,8 @@ export default function SignupFuncionario() {
       <div className="absolute top-4 right-4 z-10">
         <button
           onClick={async () => {
-            const { data, error } = await supabase.auth.getUser()
-            if (error || !data?.user) {
-              router.push('/')
-              return
-            }
-
-            const role = data.user.user_metadata?.role
-            if (role === 'funcionario_administrador') {
+            const { data } = await supabase.auth.getUser()
+            if (data?.user) {
               router.push('/dashboard')
             } else {
               router.push('/')
