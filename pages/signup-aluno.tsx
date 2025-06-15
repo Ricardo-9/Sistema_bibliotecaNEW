@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState } from 'react'
@@ -34,7 +33,8 @@ export default function SignupAluno() {
   const filterInput = (name: string, value: string) => {
     switch (name) {
       case 'nome': return value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').slice(0, 100)
-      case 'cpf': case 'telefone': return value.replace(/\D/g, '').slice(0, 11)
+      case 'cpf':
+      case 'telefone': return value.replace(/\D/g, '').slice(0, 11)
       case 'matricula': return value.replace(/\D/g, '').slice(0, 7)
       case 'endereco': return value.slice(0, 150)
       case 'email': return value.slice(0, 100)
@@ -54,14 +54,24 @@ export default function SignupAluno() {
     if (formData.cpf.length !== 11) return setError('O CPF deve conter 11 números.')
     if (formData.telefone.length < 10) return setError('Telefone inválido.')
 
+    // Verifica se já há um usuário logado
+    const { data: userData, error: userError } = await supabase.auth.getUser()
+
+    if (userData?.user) {
+      return setError('Você já está logado. Para cadastrar um novo aluno autenticado, deslogue primeiro.')
+    }
+
     const { email, senha, ...dados } = formData
+
     const { data: authUser, error: signUpError } = await supabase.auth.signUp({
       email,
       password: senha,
       options: { data: { role: 'aluno' } },
     })
 
-    if (signUpError || !authUser.user) return setError(signUpError?.message || 'Erro ao cadastrar.')
+    if (signUpError || !authUser.user) {
+      return setError(signUpError?.message || 'Erro ao cadastrar.')
+    }
 
     const { error: insertError } = await supabase.from('alunos').insert({
       ...dados,
@@ -69,11 +79,12 @@ export default function SignupAluno() {
       user_id: authUser.user.id,
     })
 
-    if (insertError) setError(insertError.message)
-    else {
-      setMsg('Cadastro realizado com sucesso!')
-      setTimeout(() => router.push('/painel_aluno'), 1500)
+    if (insertError) {
+      return setError(insertError.message)
     }
+
+    setMsg('Cadastro realizado com sucesso!')
+    setTimeout(() => router.push('/painel_aluno'), 1500)
   }
 
   return (
@@ -82,7 +93,13 @@ export default function SignupAluno() {
         <button
           onClick={async () => {
             const { data, error } = await supabase.auth.getUser()
-            if (data?.user) {
+            if (error || !data?.user) {
+              router.push('/')
+              return
+            }
+
+            const role = data.user.user_metadata?.role
+            if (role === 'funcionario_administrador') {
               router.push('/dashboard')
             } else {
               router.push('/')
@@ -105,9 +122,9 @@ export default function SignupAluno() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <input className="input-style" name="nome" placeholder="Nome completo" value={formData.nome} onChange={handleChange} required />
-          
+
           <Cleave
-            className="w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30"
+            className="input-style"
             name="cpf"
             placeholder="CPF"
             value={formData.cpf}
@@ -125,7 +142,7 @@ export default function SignupAluno() {
           <input className="input-style" name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
 
           <Cleave
-            className="w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30"
+            className="input-style"
             name="telefone"
             placeholder="Telefone"
             value={formData.telefone}
@@ -160,7 +177,7 @@ export default function SignupAluno() {
           </button>
         </form>
       </div>
-      
+
       <style jsx>{`
         .input-style {
           width: 100%;
