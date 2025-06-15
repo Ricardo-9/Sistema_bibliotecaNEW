@@ -97,12 +97,9 @@ function PesqFuncionarios({ role }: Props) {
             >
               <Search className="w-5 h-5" /> Pesquisar
             </button>
-            <button
-              onClick={() => router.push('/signup-funcionario')}
-              className="flex items-center gap-2 bg-white text-[#006400] font-semibold px-5 py-2 rounded-full hover:bg-emerald-100 transition shadow"
-            >
-              <PlusCircle className="w-5 h-5" /> Cadastrar Funcionário
-            </button>
+          
+    
+              <PlusCircle clas
           </div>
         </div>
 
