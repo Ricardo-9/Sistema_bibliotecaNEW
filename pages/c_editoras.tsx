@@ -70,8 +70,6 @@ function CadastroEditoras() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-
-      {/* Botões de topo */}
       <div className="absolute top-4 right-4 flex gap-4 z-20">
         <button
           onClick={() => router.push('/dashboard')}

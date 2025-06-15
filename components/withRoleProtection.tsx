@@ -13,15 +13,14 @@ export function withRoleProtection(Component: any, allowedRoles: string[]) {
         const { data: { user }, error } = await supabase.auth.getUser()
 
         if (error || !user) {
-          router.push('/login')  // redireciona para login se não logado
+          router.push('/') 
           return
         }
 
-        // O role deve estar em user_metadata.role
         const userRole = user.user_metadata?.role
 
         if (!userRole || !allowedRoles.includes(userRole)) {
-          router.push('/unauthorized') // redireciona se não tiver permissão
+          router.push('/unauthorized') 
           return
         }
 

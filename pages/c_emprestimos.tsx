@@ -168,7 +168,6 @@ function CadastroEmprestimos() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-      {/* Botão voltar */}
       <button
         onClick={handleRedirect}
         disabled={!usuario}

@@ -47,7 +47,6 @@ function PesqEmprestimos() {
       .order('data_emprestimo', { ascending: false })
 
     if (filtro && filtro.trim() !== '') {
-      // Filtra por nome do livro, buscar ids do livro cujo nome combine com filtro
       const { data: livrosFiltrados } = await supabase
         .from('livros')
         .select('id')
@@ -56,7 +55,6 @@ function PesqEmprestimos() {
       if (livrosIds.length > 0) {
         query = query.in('nome_livro', livrosIds)
       } else {
-        // Se não achar livros, já limpa resultados
         setEmprestimos([])
         setCarregando(false)
         return

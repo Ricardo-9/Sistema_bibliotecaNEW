@@ -123,9 +123,6 @@ function EditarPerfil() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-      
-
-      {/* Botão voltar */}
       <button
         onClick={() => router.push('/perfil')}
         className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
@@ -151,7 +148,7 @@ function EditarPerfil() {
             ].map(({ label, key }) => (
               <input
                 key={key}
-                className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+                className="input-style"
                 placeholder={label}
                 value={(perfil as any)[key]}
                 onChange={e => setPerfil({ ...perfil, [key]: e.target.value })}
@@ -160,24 +157,43 @@ function EditarPerfil() {
 
             {perfil.tipo === 'aluno' && (
               <>
-                {[{ label: 'Matrícula', key: 'matricula' },
-                  { label: 'Curso', key: 'curso' },
-                  { label: 'Série', key: 'serie' }
-                ].map(({ label, key }) => (
-                  <input
-                    key={key}
-                    className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
-                    placeholder={label}
-                    value={(perfil as any)[key]}
-                    onChange={e => setPerfil({ ...perfil, [key]: e.target.value })}
-                  />
-                ))}
+                <input
+                  className="input-style"
+                  placeholder="Matrícula"
+                  value={perfil.matricula}
+                  onChange={(e) => setPerfil({ ...perfil, matricula: e.target.value.replace(/\D/g, '').slice(0, 7) })}
+                />
+
+                <select
+                  className="input-style"
+                  value={perfil.serie}
+                  onChange={(e) => setPerfil({ ...perfil, serie: e.target.value })}
+                  required
+                >
+                  <option value="">Selecione a série</option>
+                  <option value="1 ano">1º Ano</option>
+                  <option value="2 ano">2º Ano</option>
+                  <option value="3 ano">3º Ano</option>
+                </select>
+
+                <select
+                  className="input-style"
+                  value={perfil.curso}
+                  onChange={(e) => setPerfil({ ...perfil, curso: e.target.value })}
+                  required
+                >
+                  <option value="">Selecione o curso</option>
+                  <option value="adm">Administração</option>
+                  <option value="agro">Agropecuária</option>
+                  <option value="infor">Informática</option>
+                  <option value="regencia">Regência</option>
+                </select>
               </>
             )}
 
             {perfil.tipo === 'funcionario' && (
               <input
-                className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+                className="input-style"
                 placeholder="Função"
                 value={perfil.funcao}
                 onChange={e => setPerfil({ ...perfil, funcao: e.target.value })}
@@ -193,6 +209,22 @@ function EditarPerfil() {
           </form>
         )}
       </div>
+      <style jsx>{`
+        .input-style {
+          width: 100%;
+          padding: 1rem;
+          border: none;
+          border-radius: 9999px;
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+          font-weight: 600;
+          color: #064e3b;
+          background-color: white;
+          outline: none;
+        }
+        .input-style:focus {
+          box-shadow: 0 0 0 4px #064e3b40;
+        }
+      `}</style>
     </div>
   )
 }

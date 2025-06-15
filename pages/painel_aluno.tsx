@@ -58,5 +58,4 @@ function PainelAluno() {
   )
 }
 
-// Aqui a proteção para permitir acesso somente ao role 'aluno'
 export default withRoleProtection(PainelAluno, ['aluno'])

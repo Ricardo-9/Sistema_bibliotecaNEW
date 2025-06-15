@@ -43,7 +43,7 @@ export default function ResetPassword() {
   const handleBack = async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (session) {
-      router.push('/dashboard')
+      router.push('/perfil')
     } else {
       router.push('/')
     }
@@ -51,18 +51,12 @@ export default function ResetPassword() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-      {/* Brasão */}
-      
-
-      {/* Botão voltar */}
       <button
         onClick={handleBack}
         className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
       >
         <ArrowLeft className="w-6 h-6" />
       </button>
-
-      {/* Formulário */}
       <div className="relative z-10 bg-[#2e8b57] text-white rounded-[30px] shadow-lg p-8 sm:p-12 max-w-md w-full space-y-6">
         <h1 className="text-3xl font-bold text-center flex items-center justify-center gap-3 drop-shadow">
           <KeyRound className="w-7 h-7" /> Redefinir Senha

@@ -77,7 +77,6 @@ export default function SignupAluno() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-      {/* Botão de voltar com redirecionamento condicional */}
       <div className="absolute top-4 right-4 flex gap-4 z-20">
         <button
           onClick={async () => {
@@ -167,8 +166,7 @@ export default function SignupAluno() {
           </button>
         </form>
       </div>
-
-      {/* Estilo aplicado a todos os inputs e selects */}
+      
       <style jsx>{`
         .input-style {
           width: 100%;

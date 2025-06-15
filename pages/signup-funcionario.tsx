@@ -87,7 +87,6 @@ export default function SignupFuncionario() {
 
   return (
     <div className="min-h-screen bg-[#006400] flex items-center justify-center px-4 py-10 relative">
-      {/* Botão de voltar com verificação de role */}
       <div className="absolute top-4 right-4 z-10">
         <button
           onClick={async () => {

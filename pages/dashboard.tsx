@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 
 type Props = {
-  role: string // vem do HOC
+  role: string 
 }
 
 function DashboardPesquisaUnificada({ role }: Props) {

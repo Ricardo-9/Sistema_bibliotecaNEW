@@ -71,7 +71,6 @@ function PesLivros({ role }: Props) {
   
   return (
     <div className="min-h-screen bg-[#006400] flex flex-col items-center justify-start px-4 py-10 relative">
-      {/* Botão voltar */}
       <button
   onClick={() => {
     if (role === 'aluno') {
@@ -91,7 +90,6 @@ function PesLivros({ role }: Props) {
           <Book className="w-8 h-8" /> Pesquisa de Livros
         </h1>
 
-        {/* Filtro e botões */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
           <input
             type="text"
@@ -118,8 +116,6 @@ function PesLivros({ role }: Props) {
             )}
           </div>
         </div>
-
-        {/* Conteúdo da tabela */}
         {carregando ? (
           <p className="text-center text-lg font-semibold">Carregando...</p>
         ) : livros.length === 0 ? (
