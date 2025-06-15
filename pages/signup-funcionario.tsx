@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
 import Cleave from 'cleave.js/react'
 import { ArrowLeft } from 'lucide-react'
+import { withGuestProtection } from '../components/withGuestProtection'
 
-export default function SignupFuncionario() {
+function SignupFuncionario() {
   const router = useRouter()
   const [formData, setFormData] = useState({
     nome: '',
@@ -83,20 +84,14 @@ export default function SignupFuncionario() {
     }
   }
 
-  const inputClasses = 'w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30 placeholder:text-lg placeholder:font-bold'
+  const inputClasses =
+    'w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30 placeholder:text-lg placeholder:font-bold'
 
   return (
     <div className="min-h-screen bg-[#006400] flex items-center justify-center px-4 py-10 relative">
       <div className="absolute top-4 right-4 z-10">
         <button
-          onClick={async () => {
-            const { data } = await supabase.auth.getUser()
-            if (data?.user) {
-              router.push('/dashboard')
-            } else {
-              router.push('/')
-            }
-          }}
+          onClick={() => router.push('/')}
           className="bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
           aria-label="Voltar"
         >
@@ -105,10 +100,26 @@ export default function SignupFuncionario() {
       </div>
 
       <div className="w-full max-w-2xl p-10 bg-[#2e8b57] rounded-3xl shadow-xl">
-        <h1 className="text-white text-3xl font-bold text-center mb-8">Cadastro de Funcionário</h1>
+        <h1 className="text-white text-3xl font-bold text-center mb-8">
+          Cadastro de Funcionário
+        </h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <input name="nome" placeholder="Nome" required onChange={handleChange} value={formData.nome} className={inputClasses} />
-          <input name="funcao" placeholder="Função" required onChange={handleChange} value={formData.funcao} className={inputClasses} />
+          <input
+            name="nome"
+            placeholder="Nome"
+            required
+            onChange={handleChange}
+            value={formData.nome}
+            className={inputClasses}
+          />
+          <input
+            name="funcao"
+            placeholder="Função"
+            required
+            onChange={handleChange}
+            value={formData.funcao}
+            className={inputClasses}
+          />
           <Cleave
             name="cpf"
             placeholder="CPF"
@@ -117,9 +128,36 @@ export default function SignupFuncionario() {
             onChange={handleChange}
             className={inputClasses}
           />
-          <input type="email" name="email" placeholder="Email" required maxLength={100} onChange={handleChange} value={formData.email} className={inputClasses} />
-          <input type="password" name="senha" placeholder="Senha" required minLength={6} maxLength={50} onChange={handleChange} value={formData.senha} className={inputClasses} />
-          <input name="endereco" placeholder="Endereço" required maxLength={200} onChange={handleChange} value={formData.endereco} className={inputClasses} />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            required
+            maxLength={100}
+            onChange={handleChange}
+            value={formData.email}
+            className={inputClasses}
+          />
+          <input
+            type="password"
+            name="senha"
+            placeholder="Senha"
+            required
+            minLength={6}
+            maxLength={50}
+            onChange={handleChange}
+            value={formData.senha}
+            className={inputClasses}
+          />
+          <input
+            name="endereco"
+            placeholder="Endereço"
+            required
+            maxLength={200}
+            onChange={handleChange}
+            value={formData.endereco}
+            className={inputClasses}
+          />
           <Cleave
             name="telefone"
             placeholder="Telefone"
@@ -128,12 +166,20 @@ export default function SignupFuncionario() {
             onChange={handleChange}
             className={inputClasses}
           />
-          <select name="role" value={formData.role} onChange={handleChange} className={inputClasses}>
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className={inputClasses}
+          >
             <option value="funcionario">Funcionário</option>
             <option value="funcionario_administrador">Funcionário Administrador</option>
           </select>
 
-          <button type="submit" className="bg-white text-emerald-900 font-bold rounded-full px-6 py-3 hover:bg-emerald-100 transition">
+          <button
+            type="submit"
+            className="bg-white text-emerald-900 font-bold rounded-full px-6 py-3 hover:bg-emerald-100 transition"
+          >
             Cadastre-se
           </button>
 
@@ -143,3 +189,5 @@ export default function SignupFuncionario() {
     </div>
   )
 }
+
+export default withGuestProtection(SignupFuncionario)

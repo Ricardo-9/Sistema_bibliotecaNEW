@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState } from 'react'
@@ -5,8 +6,9 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
 import Cleave from 'cleave.js/react'
 import { UserPlus, ArrowLeft } from 'lucide-react'
+import { withGuestProtection } from '../components/withGuestProtection'
 
-export default function SignupAluno() {
+function SignupAluno() {
   const router = useRouter()
   const [formData, setFormData] = useState({
     nome: '',
@@ -54,24 +56,14 @@ export default function SignupAluno() {
     if (formData.cpf.length !== 11) return setError('O CPF deve conter 11 números.')
     if (formData.telefone.length < 10) return setError('Telefone inválido.')
 
-    // Verifica se já há um usuário logado
-    const { data: userData, error: userError } = await supabase.auth.getUser()
-
-    if (userData?.user) {
-      return setError('Você já está logado. Para cadastrar um novo aluno autenticado, deslogue primeiro.')
-    }
-
     const { email, senha, ...dados } = formData
-
     const { data: authUser, error: signUpError } = await supabase.auth.signUp({
       email,
       password: senha,
       options: { data: { role: 'aluno' } },
     })
 
-    if (signUpError || !authUser.user) {
-      return setError(signUpError?.message || 'Erro ao cadastrar.')
-    }
+    if (signUpError || !authUser.user) return setError(signUpError?.message || 'Erro ao cadastrar.')
 
     const { error: insertError } = await supabase.from('alunos').insert({
       ...dados,
@@ -79,32 +71,18 @@ export default function SignupAluno() {
       user_id: authUser.user.id,
     })
 
-    if (insertError) {
-      return setError(insertError.message)
+    if (insertError) setError(insertError.message)
+    else {
+      setMsg('Cadastro realizado com sucesso!')
+      setTimeout(() => router.push('/painel_aluno'), 1500)
     }
-
-    setMsg('Cadastro realizado com sucesso!')
-    setTimeout(() => router.push('/painel_aluno'), 1500)
   }
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
       <div className="absolute top-4 right-4 flex gap-4 z-20">
         <button
-          onClick={async () => {
-            const { data, error } = await supabase.auth.getUser()
-            if (error || !data?.user) {
-              router.push('/')
-              return
-            }
-
-            const role = data.user.user_metadata?.role
-            if (role === 'funcionario_administrador') {
-              router.push('/dashboard')
-            } else {
-              router.push('/')
-            }
-          }}
+          onClick={() => router.push('/')}
           className="bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
           aria-label="Voltar"
         >
@@ -197,3 +175,6 @@ export default function SignupAluno() {
     </div>
   )
 }
+
+
+export default withGuestProtection(SignupAluno)

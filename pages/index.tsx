@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabaseClient'
 import Image from 'next/image'
 import brasao from './imgs/Bc.png.png'
 import { AtSign, Lock, ArrowLeft } from 'lucide-react'
+import { withGuestProtection } from '../components/withGuestProtection'
 
-export default function Home() {
+function LoginPage() {
   const [step, setStep] = useState<'login' | 'role'>('login')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -151,3 +152,4 @@ export default function Home() {
   )
 }
 
+export default withGuestProtection(LoginPage)
