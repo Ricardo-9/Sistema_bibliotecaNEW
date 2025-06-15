@@ -6,7 +6,6 @@ import { supabase } from '../lib/supabaseClient'
 import { withRoleProtection } from '../components/withRoleProtection'
 import {
   Search,
-  PlusCircle,
   Trash2,
   Pencil,
   UserCheck,
@@ -97,9 +96,6 @@ function PesqFuncionarios({ role }: Props) {
             >
               <Search className="w-5 h-5" /> Pesquisar
             </button>
-          
-    
-              <PlusCircle clas
           </div>
         </div>
 
