@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState } from 'react'
@@ -81,14 +82,7 @@ export default function SignupAluno() {
         <button
           onClick={async () => {
             const { data, error } = await supabase.auth.getUser()
-
-            if (error || !data?.user) {
-              router.push('/')
-              return
-            }
-
-            const role = data.user.user_metadata?.role
-            if (role === 'funcionario_administrador') {
+            if (data?.user) {
               router.push('/dashboard')
             } else {
               router.push('/')
