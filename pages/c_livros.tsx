@@ -1,4 +1,4 @@
-
+'use client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
@@ -21,7 +21,6 @@ function CadastroLivros() {
     categoria: '',
     editora: '',
     isbn: '',
-    q_disponivel: '',
   })
 
   const [editoras, setEditoras] = useState<Editora[]>([])
@@ -59,28 +58,19 @@ function CadastroLivros() {
       return
     }
 
-    if(parseInt(form.q_disponivel) < 0){
-      setError('A quantidade de livros deve ser um inteiro positivo')
-      return
-    }
-
     const { error } = await supabase.from('livros').insert([{
       nome: form.nome.trim(),
       autor: form.autor.trim(),
       ano_publicacao: parseInt(form.ano_publicacao),
       categoria: form.categoria.trim(),
-      editora: form.editora,
-      isbn: form.isbn,
-      q_disponivel: form.q_disponivel,
+      editora_id: form.editora,
     }])
-
-    
 
     if (error) {
       setError('Erro ao cadastrar o livro: ' + error.message)
     } else {
       setMsg('Livro cadastrado com sucesso!')
-      setForm({ nome: '', autor: '', ano_publicacao: '', categoria: '', editora: '', isbn: '', q_disponivel: ''})
+      setForm({ nome: '', autor: '', ano_publicacao: '', categoria: '', editora: '', isbn: '' })
       setTimeout(() => router.push('/dashboard'), 1500)
     }
   }
@@ -175,17 +165,6 @@ function CadastroLivros() {
             }}
             required
           />
-
-          <input
-            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
-            type="number"
-            name="q_disponivel"
-            placeholder="Quantidade disponível"
-            required
-            value={form.q_disponivel}
-            onChange={handleChange}
-          />
-
           <button
             type="submit"
             className="w-full bg-white text-[#006400] font-bold py-4 rounded-full hover:bg-emerald-100 transition shadow-lg"
@@ -199,4 +178,3 @@ function CadastroLivros() {
 }
 
 export default withRoleProtection(CadastroLivros, ['funcionario', 'funcionario_administrador'])
-
