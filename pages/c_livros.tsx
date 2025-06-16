@@ -21,6 +21,7 @@ function CadastroLivros() {
     categoria: '',
     editora: '',
     isbn: '',
+    q_disponivel: '',
   })
 
   const [editoras, setEditoras] = useState<Editora[]>([])
@@ -49,31 +50,54 @@ function CadastroLivros() {
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-    setMsg('')
+  e.preventDefault()
+  setError('')
+  setMsg('')
 
-    if (!form.editora) {
-      setError('Selecione uma editora válida.')
-      return
-    }
+  const anoAtual = new Date().getFullYear()
+  const ano = parseInt(form.ano_publicacao)
+  const quantidade = parseInt(form.q_disponivel)
+  const isbn = form.isbn.trim()
 
-    const { error } = await supabase.from('livros').insert([{
-      nome: form.nome.trim(),
-      autor: form.autor.trim(),
-      ano_publicacao: parseInt(form.ano_publicacao),
-      categoria: form.categoria.trim(),
-      editora_id: form.editora,
-    }])
-
-    if (error) {
-      setError('Erro ao cadastrar o livro: ' + error.message)
-    } else {
-      setMsg('Livro cadastrado com sucesso!')
-      setForm({ nome: '', autor: '', ano_publicacao: '', categoria: '', editora: '', isbn: '' })
-      setTimeout(() => router.push('/dashboard'), 1500)
-    }
+  if (!form.editora) {
+    setError('Selecione uma editora válida.')
+    return
   }
+
+  if (isNaN(ano) || ano < 0 || ano > anoAtual) {
+    setError(`O ano de publicação deve estar entre 0 e ${anoAtual}.`)
+    return
+  }
+
+  if (isNaN(quantidade) || quantidade < 0) {
+    setError('A quantidade de livros deve ser um número inteiro positivo ou zero.')
+    return
+  }
+
+  if (isbn.length < 17) {
+    setError('O campo ISBN deve estar completamente preenchido.')
+    return
+  }
+
+  const { error } = await supabase.from('livros').insert([{
+    nome: form.nome.trim(),
+    autor: form.autor.trim(),
+    ano_publicacao: ano,
+    categoria: form.categoria.trim(),
+    editora: form.editora,
+    isbn: isbn,
+    q_disponivel: quantidade,
+  }])
+
+  if (error) {
+    setError('Erro ao cadastrar o livro: ' + error.message)
+  } else {
+    setMsg('Livro cadastrado com sucesso!')
+    setForm({ nome: '', autor: '', ano_publicacao: '', categoria: '', editora: '', isbn: '', q_disponivel: '' })
+    setTimeout(() => router.push('/dashboard'), 1500)
+  }
+}
+
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
@@ -165,6 +189,17 @@ function CadastroLivros() {
             }}
             required
           />
+
+          <input
+            className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
+            type="number"
+            name="q_disponivel"
+            placeholder="Quantidade disponível"
+            required
+            value={form.q_disponivel}
+            onChange={handleChange}
+          />
+
           <button
             type="submit"
             className="w-full bg-white text-[#006400] font-bold py-4 rounded-full hover:bg-emerald-100 transition shadow-lg"
@@ -178,4 +213,3 @@ function CadastroLivros() {
 }
 
 export default withRoleProtection(CadastroLivros, ['funcionario', 'funcionario_administrador'])
-

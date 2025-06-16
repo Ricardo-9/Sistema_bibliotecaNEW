@@ -23,6 +23,7 @@ type Alunos = {
   telefone: string
   serie: string
   curso: string
+  user_id: string 
 }
 
 type Props = {
@@ -58,9 +59,33 @@ function PesqAlunos({ role }: Props) {
     fetchAlunos()
   }, [])
 
-  const deleteAluno = async (id: string) => {
+  // Função atualizada para deletar aluno + usuário Auth
+  const deleteAluno = async (id: string, userId: string) => {
     if (!confirm('Tem certeza que deseja excluir este aluno?')) return
-    await supabase.from('alunos').delete().eq('id', id)
+
+    // Deleta registro na tabela 'alunos'
+    const { error: deleteAlunoError } = await supabase.from('alunos').delete().eq('id', id)
+    if (deleteAlunoError) {
+      alert('Erro ao deletar aluno: ' + deleteAlunoError.message)
+      return
+    }
+
+    // Chama API para deletar usuário do Supabase Auth
+    const response = await fetch('/api/deleteUser', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId })
+    })
+
+    if (!response.ok) {
+      const data = await response.json()
+      alert('Erro ao deletar usuário Auth: ' + (data.error || response.statusText))
+      return
+    }
+
+    alert('Aluno e usuário excluídos com sucesso!')
     fetchAlunos(filtroNome)
   }
 
@@ -71,18 +96,18 @@ function PesqAlunos({ role }: Props) {
   return (
     <div className="min-h-screen bg-[#006400] flex flex-col items-center justify-start px-4 py-10 relative">
       <button
-  onClick={() => {
-    if (role === 'aluno') {
-      router.push('/painel_aluno')
-    } else {
-      router.push('/dashboard')
-    }
-  }}
-  className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
-  aria-label="Voltar"
->
-  <ArrowLeft className="w-6 h-6" />
-</button>
+        onClick={() => {
+          if (role === 'aluno') {
+            router.push('/painel_aluno')
+          } else {
+            router.push('/dashboard')
+          }
+        }}
+        className="absolute top-4 right-4 bg-white text-[#006400] rounded-full p-2 shadow-md hover:bg-emerald-100 transition"
+        aria-label="Voltar"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
 
       <div className="w-full max-w-6xl bg-[#2e8b57] rounded-[30px] p-8 shadow-2xl z-10 text-white">
         <h1 className="text-4xl font-bold text-center mb-8 flex items-center justify-center gap-2 drop-shadow">
@@ -104,7 +129,6 @@ function PesqAlunos({ role }: Props) {
             >
               <Search className="w-5 h-5" /> Pesquisar
             </button>
-          
           </div>
         </div>
 
@@ -148,7 +172,7 @@ function PesqAlunos({ role }: Props) {
                       <td className="px-4 py-3 border border-[#006400] text-center">
                         <div className="flex justify-center gap-3">
                           <button
-                            onClick={() => deleteAluno(aluno.id)}
+                            onClick={() => deleteAluno(aluno.id, aluno.user_id)} // <-- passamos o user_id aqui
                             className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-3 py-1 shadow-sm"
                             aria-label={`Excluir aluno ${aluno.nome}`}
                           >

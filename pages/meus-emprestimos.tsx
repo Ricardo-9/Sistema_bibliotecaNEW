@@ -11,9 +11,9 @@ type Livro = {
 }
 
 type Emprestimo = {
-  id: number
+  id: string 
   data_devolucao: string
-  livros: Livro[]
+  livro: Livro | null
 }
 
 function MeusEmprestimos() {
@@ -28,6 +28,7 @@ function MeusEmprestimos() {
       setErro(null)
 
       try {
+        // Busca usuário autenticado
         const { data: { user }, error: erroAuth } = await supabase.auth.getUser()
 
         if (erroAuth || !user) {
@@ -35,6 +36,8 @@ function MeusEmprestimos() {
           router.push('/login')
           return
         }
+
+        // Busca id de aluno pelo user_id
         const { data: aluno, error: erroAluno } = await supabase
           .from('alunos')
           .select('id')
@@ -43,6 +46,8 @@ function MeusEmprestimos() {
 
         let usuarioId = aluno?.id ?? null
         let tipo = 'aluno'
+
+        // Se não achar aluno, tenta buscar funcionário
         if (!usuarioId) {
           const { data: funcionario, error: erroFuncionario } = await supabase
             .from('funcionarios')
@@ -63,9 +68,17 @@ function MeusEmprestimos() {
           return
         }
 
+        // Busca empréstimos, incluindo dados do livro (objeto único, não array)
         const { data, error: erroEmprestimos } = await supabase
           .from('emprestimos')
-          .select('id, data_devolucao, livros (nome)')
+          // Seleciona campos de emprestimos e faz inner join para pegar nome do livro
+          .select(`
+            id,
+            data_devolucao,
+            livros (
+              nome
+            )
+          `)
           .eq('solicitante_id', usuarioId)
           .eq('tipo_solicitante', tipo)
           .is('devolvido', null)
@@ -75,16 +88,13 @@ function MeusEmprestimos() {
           setErro('Erro ao buscar empréstimos.')
           setEmprestimos([])
         } else if (Array.isArray(data)) {
-
-          const emprestimosFormatados: Emprestimo[] = data.map(item => ({
-            id: typeof item.id === 'number' ? item.id : Number(item.id) || 0,
+          // Mapear dados - livros vem como objeto (não array)
+          const emprestimosFormatados: Emprestimo[] = data.map((item: any) => ({
+            id: item.id,
             data_devolucao: item.data_devolucao ?? '',
-            livros: Array.isArray(item.livros)
-              ? item.livros.map((livro: any) => ({
-                  nome: typeof livro.nome === 'string' ? livro.nome : 'Nome não encontrado',
-                }))
-              : [],
+            livro: item.livros ?? null,
           }))
+
           setEmprestimos(emprestimosFormatados)
           setErro(null)
         } else {
@@ -130,10 +140,8 @@ function MeusEmprestimos() {
                 className="bg-[#004d00] rounded-2xl p-6 shadow-md text-white flex flex-col gap-2"
               >
                 <p className="text-lg font-semibold">
-                  <strong>Livro(s):</strong>{' '}
-                  {emp.livros.length > 0
-                    ? emp.livros.map((l) => l.nome).join(', ')
-                    : 'Nome não encontrado'}
+                  <strong>Livro:</strong>{' '}
+                  {emp.livro ? emp.livro.nome : 'Nome não encontrado'}
                 </p>
                 <p className="text-lg font-semibold">
                   <strong>Data para Devolução:</strong>{' '}
