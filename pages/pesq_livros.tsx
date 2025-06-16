@@ -21,6 +21,9 @@ type Livros = {
   autor: string
   q_disponivel: string
   isbn: string
+  editoras: {
+    nome: string
+  } | null
 }
 
 type Props = {
@@ -35,23 +38,48 @@ function PesLivros({ role }: Props) {
   const [carregando, setCarregando] = useState(false)
 
   const fetchLivros = async (nomeFiltro?: string) => {
-    setCarregando(true)
-    let query = supabase.from('livros').select('*').order('created_at', { ascending: false })
+  setCarregando(true)
 
-    if (nomeFiltro && nomeFiltro.trim() !== '') {
-      query = query.ilike('nome', `%${nomeFiltro}%`)
-    }
+  let livrosQuery = supabase
+    .from('livros')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-    const { data, error } = await query
-    setCarregando(false)
-
-    if (error) {
-      console.error(error)
-      alert(error.message)
-    } else {
-      setLivros(data || [])
-    }
+  if (nomeFiltro && nomeFiltro.trim() !== '') {
+    livrosQuery = livrosQuery.ilike('nome', `%${nomeFiltro}%`)
   }
+
+  const { data: livrosData, error: livrosError } = await livrosQuery
+
+  if (livrosError) {
+    setCarregando(false)
+    console.error(livrosError)
+    alert(livrosError.message)
+    return
+  }
+
+  const { data: editorasData, error: editorasError } = await supabase
+    .from('editoras')
+    .select('id, nome')
+
+  setCarregando(false)
+
+  if (editorasError) {
+    console.error(editorasError)
+    alert(editorasError.message)
+    return
+  }
+
+  const livrosComEditoras = (livrosData || []).map((livro) => {
+    const editora = editorasData?.find((e) => e.id === livro.editora)
+    return {
+      ...livro,
+      editoras: editora ? { nome: editora.nome } : null,
+    }
+  })
+
+  setLivros(livrosComEditoras)
+}
 
   useEffect(() => {
     fetchLivros()
@@ -131,6 +159,7 @@ function PesLivros({ role }: Props) {
                   <th className="px-4 py-3">Autor</th>
                   <th className="px-4 py-3">Disponível</th>
                   <th className="px-4 py-3">ISBN</th>
+                  <th className="px-4 py-3">Editora</th>
                   {role === 'funcionario_administrador' && (
                     <th className="px-4 py-3 text-center">Ações</th>
                   )}
@@ -148,6 +177,7 @@ function PesLivros({ role }: Props) {
                     <td className="px-4 py-3 border border-[#006400]">{livro.autor}</td>
                     <td className="px-4 py-3 border border-[#006400]">{livro.q_disponivel}</td>
                     <td className="px-4 py-3 border border-[#006400]">{livro.isbn}</td>
+                    <td className="px-4 py-3 border border-[#006400]">{livro.editoras?.nome || 'Não informada'}</td>
                     {role === 'funcionario_administrador' && (
                       <td className="px-4 py-3 border border-[#006400] text-center">
                         <div className="flex justify-center gap-3">
