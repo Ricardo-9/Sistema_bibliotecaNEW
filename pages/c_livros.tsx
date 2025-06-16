@@ -1,12 +1,10 @@
-'use client'
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import Image from 'next/image'
-import brasao from './imgs/Bc.png.png'
-import { ArrowLeft, BookPlus, Landmark } from 'lucide-react'
+import { ArrowLeft, BookPlus } from 'lucide-react'
 import { withRoleProtection } from '../components/withRoleProtection'
+import Cleave from 'cleave.js/react'
 
 interface Editora {
   id: string
@@ -17,11 +15,12 @@ function CadastroLivros() {
   const router = useRouter()
 
   const [form, setForm] = useState({
-    titulo: '',
+    nome: '',
     autor: '',
     ano_publicacao: '',
-    genero: '',
+    categoria: '',
     editora: '',
+    isbn: '',
   })
 
   const [editoras, setEditoras] = useState<Editora[]>([])
@@ -60,24 +59,18 @@ function CadastroLivros() {
     }
 
     const { error } = await supabase.from('livros').insert([{
-      titulo: form.titulo.trim(),
+      nome: form.nome.trim(),
       autor: form.autor.trim(),
       ano_publicacao: parseInt(form.ano_publicacao),
-      genero: form.genero.trim(),
-      editora: form.editora,
+      categoria: form.categoria.trim(),
+      editora_id: form.editora,
     }])
 
     if (error) {
       setError('Erro ao cadastrar o livro: ' + error.message)
     } else {
       setMsg('Livro cadastrado com sucesso!')
-      setForm({
-        titulo: '',
-        autor: '',
-        ano_publicacao: '',
-        genero: '',
-        editora: '',
-      })
+      setForm({ nome: '', autor: '', ano_publicacao: '', categoria: '', editora: '', isbn: '' })
       setTimeout(() => router.push('/dashboard'), 1500)
     }
   }
@@ -107,10 +100,10 @@ function CadastroLivros() {
           <input
             className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             type="text"
-            name="titulo"
+            name="nome"
             placeholder="Título"
             required
-            value={form.titulo}
+            value={form.nome}
             onChange={handleChange}
             autoComplete="off"
           />
@@ -136,10 +129,10 @@ function CadastroLivros() {
           <input
             className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             type="text"
-            name="genero"
+            name="categoria"
             placeholder="Gênero"
             required
-            value={form.genero}
+            value={form.categoria}
             onChange={handleChange}
             autoComplete="off"
           />
@@ -159,6 +152,19 @@ function CadastroLivros() {
             ))}
           </select>
 
+          <Cleave
+            className="w-full p-4 rounded-full font-semibold text-emerald-900 bg-white shadow-inner focus:outline-none focus:ring-4 focus:ring-emerald-800/30"
+            name="isbn"
+            placeholder="ISBN"
+            value={form.isbn}
+            onChange={handleChange}
+            options={{
+              delimiters: ['-', '-', '-', '-', '-'],
+              blocks: [3, 2, 5, 2, 1],
+              numericOnly: true,
+            }}
+            required
+          />
           <button
             type="submit"
             className="w-full bg-white text-[#006400] font-bold py-4 rounded-full hover:bg-emerald-100 transition shadow-lg"
@@ -172,3 +178,4 @@ function CadastroLivros() {
 }
 
 export default withRoleProtection(CadastroLivros, ['funcionario', 'funcionario_administrador'])
+
