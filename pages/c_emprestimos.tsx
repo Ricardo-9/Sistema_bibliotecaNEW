@@ -27,6 +27,10 @@ function CadastroEmprestimos() {
         .gt('q_disponivel', 0)
         .order('nome')
 
+        console.log('Dados livros:', data)
+        console.log('Erro livros:', error)
+
+
       if (!error && data) {
         setLivrosDisponiveis(data)
       } else {
