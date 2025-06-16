@@ -21,7 +21,7 @@ function CadastroLivros() {
     autor: '',
     ano_publicacao: '',
     genero: '',
-    editora_id: '',
+    editora: '',
   })
 
   const [editoras, setEditoras] = useState<Editora[]>([])
@@ -30,10 +30,15 @@ function CadastroLivros() {
 
   useEffect(() => {
     async function fetchEditoras() {
-      const { data, error } = await supabase.from('editoras').select('id, nome').order('nome', { ascending: true })
+      const { data, error } = await supabase
+        .from('editoras')
+        .select('id, nome')
+        .order('nome', { ascending: true })
+
       if (data) setEditoras(data)
       else console.error('Erro ao buscar editoras:', error)
     }
+
     fetchEditoras()
   }, [])
 
@@ -49,7 +54,7 @@ function CadastroLivros() {
     setError('')
     setMsg('')
 
-    if (!form.editora_id) {
+    if (!form.editora) {
       setError('Selecione uma editora válida.')
       return
     }
@@ -59,21 +64,26 @@ function CadastroLivros() {
       autor: form.autor.trim(),
       ano_publicacao: parseInt(form.ano_publicacao),
       genero: form.genero.trim(),
-      editora_id: form.editora_id,
+      editora: form.editora,
     }])
 
     if (error) {
       setError('Erro ao cadastrar o livro: ' + error.message)
     } else {
       setMsg('Livro cadastrado com sucesso!')
-      setForm({ titulo: '', autor: '', ano_publicacao: '', genero: '', editora_id: '' })
+      setForm({
+        titulo: '',
+        autor: '',
+        ano_publicacao: '',
+        genero: '',
+        editora: '',
+      })
       setTimeout(() => router.push('/dashboard'), 1500)
     }
   }
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#006400] px-4 sm:px-8">
-
       {/* Botões de topo */}
       <div className="absolute top-4 right-4 flex gap-4 z-20">
         <button
@@ -135,8 +145,8 @@ function CadastroLivros() {
           />
 
           <select
-            name="editora_id"
-            value={form.editora_id}
+            name="editora"
+            value={form.editora}
             onChange={handleChange}
             required
             className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold bg-white"
