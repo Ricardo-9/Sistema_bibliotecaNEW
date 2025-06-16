@@ -19,7 +19,7 @@ function CadastroLivros() {
   const [form, setForm] = useState({
     titulo: '',
     autor: '',
-    ano: '',
+    ano_publicacao: '',
     genero: '',
     editora_id: '',
   })
@@ -57,7 +57,7 @@ function CadastroLivros() {
     const { error } = await supabase.from('livros').insert([{
       titulo: form.titulo.trim(),
       autor: form.autor.trim(),
-      ano: parseInt(form.ano),
+      ano_publicacao: parseInt(form.ano_publicacao),
       genero: form.genero.trim(),
       editora_id: form.editora_id,
     }])
@@ -66,7 +66,7 @@ function CadastroLivros() {
       setError('Erro ao cadastrar o livro: ' + error.message)
     } else {
       setMsg('Livro cadastrado com sucesso!')
-      setForm({ titulo: '', autor: '', ano: '', genero: '', editora_id: '' })
+      setForm({ titulo: '', autor: '', ano_publicacao: '', genero: '', editora_id: '' })
       setTimeout(() => router.push('/dashboard'), 1500)
     }
   }
@@ -117,10 +117,10 @@ function CadastroLivros() {
           <input
             className="w-full p-4 rounded-full border-none shadow-inner focus:outline-none focus:ring-4 focus:ring-green-700 text-green-900 font-semibold"
             type="number"
-            name="ano"
-            placeholder="Ano"
+            name="ano_publicacao"
+            placeholder="Ano de Publicação"
             required
-            value={form.ano}
+            value={form.ano_publicacao}
             onChange={handleChange}
           />
           <input
