@@ -152,4 +152,3 @@ function LoginPage() {
   )
 }
 
-export default withGuestProtection(LoginPage)
