@@ -1,11 +1,16 @@
 'use client'
-
+import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import { BookOpen, Search, UserCircle, LogOut } from 'lucide-react'
 import { withRoleProtection } from '../components/withRoleProtection' 
 
 function PainelAluno() {
   const router = useRouter()
+
+  const handleLogout = async () => {
+      await supabase.auth.signOut()
+      router.push('/')
+    }
 
   const acoes = [
     {
@@ -46,7 +51,7 @@ function PainelAluno() {
 
         <div className="pt-6">
           <button
-            onClick={() => router.push('/')}
+            onClick={(handleLogout)}
             className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[#006400] text-white font-semibold rounded-full hover:bg-[#006400] hover:text-white transition-all duration-300 shadow"
           >
             <LogOut className="w-5 h-5" />

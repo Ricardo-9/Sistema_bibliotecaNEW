@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabaseClient'
 import Image from 'next/image'
 import brasao from './imgs/Bc.png.png'
 import { AtSign, Lock, ArrowLeft } from 'lucide-react'
-import { withGuestProtection } from '../components/withGuestProtection'
+
 
 function LoginPage() {
   const [step, setStep] = useState<'login' | 'role'>('login')
@@ -152,3 +152,4 @@ function LoginPage() {
   )
 }
 
+export default LoginPage
